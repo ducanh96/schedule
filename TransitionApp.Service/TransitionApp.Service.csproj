@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interface\" />
-    <Folder Include="Implement\" />
+    <ProjectReference Include="..\TransitionApp.Domain\TransitionApp.Domain.csproj" />
+    <ProjectReference Include="..\TransitionApp.Infrastructor\TransitionApp.Infrastructor.csproj" />
   </ItemGroup>
 
 </Project>

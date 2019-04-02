@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TransitionApp.Application.Interface;
+using TransitionApp.Application.RequestModel;
 
 namespace TransitionApp.Controllers
 {
@@ -10,11 +12,20 @@ namespace TransitionApp.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly IVehicleAppService _vehicleAppService;
+        public ValuesController(IVehicleAppService vehicleAppService)
+        {
+            _vehicleAppService = vehicleAppService;
+        }
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
+     
+
+
             return new string[] { "value1", "value2" };
+            
         }
 
         // GET api/values/5

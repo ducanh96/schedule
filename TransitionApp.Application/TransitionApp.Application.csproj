@@ -4,4 +4,13 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TransitionApp.Domain\TransitionApp.Domain.csproj" />
+    <ProjectReference Include="..\TransitionApp.Service\TransitionApp.Service.csproj" />
+  </ItemGroup>
+
 </Project>
