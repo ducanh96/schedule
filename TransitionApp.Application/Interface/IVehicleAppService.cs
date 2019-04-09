@@ -16,6 +16,8 @@ namespace TransitionApp.Application.Interface
         Task<VehicleResponse> GetAsync();
         //   Task<VehicleResponse> GetById(GetVehicleRequest request);
         Task<SearchVehicleResponse> GetAll(SearchVehicleRequest request);
+        Task<GetVehicleResponse> Get(int id);
+        
         #endregion
 
         #region Write

@@ -13,7 +13,7 @@ namespace TransitionApp.Domain.Interface.Repository
     {
         #region Read
         Task<VehicleReadModel> Get();
-        Task<VehicleReadModel> GetById(int id);
+        VehicleReadModel GetById(int id);
 
         bool checkExist(int id);
 

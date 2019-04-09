@@ -11,7 +11,10 @@ namespace TransitionApp.Application.Interface
     {
         #region Read
         Task<DriverResponse> GetAll(SearchDriverRequest request);
-       
+        Task<GetDriverResponse> Get(int id);
+        #endregion
+        #region Write
+        Task<CreateDriverResponse> Create(CreateDriverRequest request);
         #endregion
     }
 }

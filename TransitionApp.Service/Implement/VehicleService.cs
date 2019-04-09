@@ -32,6 +32,9 @@ namespace TransitionApp.Service.Implement
             return _vehicleRepository.GetAll(page, pageSize, vehicleModel);
         }
 
-    
+        public VehicleReadModel GetById(int id)
+        {
+            return _vehicleRepository.GetById(id);
+        }
     }
 }

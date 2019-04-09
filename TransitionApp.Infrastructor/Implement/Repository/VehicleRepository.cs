@@ -37,14 +37,15 @@ namespace TransitionApp.Infrastructor.Implement.Repository
         }
 
         #region Read
-        public Task<VehicleReadModel> GetById(int id)
+        public VehicleReadModel GetById(int id)
         {
             using (IDbConnection conn = Connection)
             {
-                string sQuery = "SELECT Id, LicensePlate FROM Vehicle Where Id = @Id";
-                var result = conn.QueryFirstAsync<VehicleReadModel>(sQuery, new
+                string sQuery = "SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name, MaxLoad, Driver, Note " +
+                    "FROM Vehicle Where Id = @Id";
+                var result = conn.QueryFirst<VehicleReadModel>(sQuery, new
                 {
-                    id = id
+                    Id = id
                 });
                 return result;
             }
@@ -154,6 +155,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
         {
             using (IDbConnection conn = Connection)
             {
+                // thieu volumne
                 string sQuery = @"Insert Into 
                         Vehicle(LicensePlate, 
                                

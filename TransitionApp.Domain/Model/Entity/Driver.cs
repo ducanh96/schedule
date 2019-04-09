@@ -11,15 +11,44 @@ namespace TransitionApp.Domain.Model.Entity
         public Name Name { get; }
         public Code Code { get; }
         public PhoneNumber PhoneNumber { get; }
-        public Status Status { get; set; }
+        public Status Status { get; }
+        public Address Address { get;}
+        public Day DoB { get; }
+        public CardNumber IDCardNumber { get; }
+        public Note Note { get; }
+        public Sex Sex { get; }
+        public Day StartDate { get; }
+        public Identity UserID { get; set; }
+        public VehicleTypeID VehicleTypeIDs { get; set; }
 
-        public Driver(Identity id, Name name, Code code, PhoneNumber phoneNumber, Status status)
+        public Driver(Identity id
+            , Name name
+            , Code code
+            , PhoneNumber phoneNumber
+            , Status status
+            , Address address
+            , Day dateOfBirth
+            , CardNumber cardNumber
+            , Note note
+            , Sex sex
+            , Day startDate
+            , Identity userID
+            , VehicleTypeID vehicleTypeID            
+            )
         {
             Id = id;
             Name = name;
+            Code = code;
             PhoneNumber = phoneNumber;
             Status = status;
-            Code = code;
+            Address = address;
+            DoB = dateOfBirth;
+            IDCardNumber = cardNumber;
+            Note = note;
+            Sex = sex;
+            StartDate = startDate;
+            UserID = userID;
+            VehicleTypeIDs = vehicleTypeID;
         }
         public Driver(Identity id)
         {

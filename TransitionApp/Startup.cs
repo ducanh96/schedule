@@ -1,37 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using GraphiQl;
+﻿using GraphiQl;
 using GraphQL;
 using GraphQL.Types;
-using GreenPipes;
-using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
-using RabbitMQ.Client;
 using Swashbuckle.AspNetCore.Swagger;
 using TransitionApp.Application.Implement;
 using TransitionApp.Application.Interface;
 using TransitionApp.Domain.Bus;
 using TransitionApp.Domain.CommandHanders;
-using TransitionApp.Domain.Commands;
+using TransitionApp.Domain.Commands.Driver;
 using TransitionApp.Domain.Commands.Vehicle;
 using TransitionApp.Domain.Commands.VehicleType;
-using TransitionApp.Domain.Events.Vehicle;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Notifications;
-using TransitionApp.Domain.ReadModel;
-using TransitionApp.Infrastructor.Bus;
 using TransitionApp.Infrastructor.Implement.Repository;
 using TransitionApp.Models;
 using TransitionApp.Models.Vehicle;
@@ -57,8 +43,10 @@ namespace TransitionApp
         {
             services.AddMediatR(typeof(Startup));
             services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
             // Domain Bus (Mediator)
             services.AddScoped<IMediatorHandler, Infrastructor.Bus.InMemoryBus>();
+
             // DI vehicle
             services.AddTransient<IVehicleAppService, VehicleAppService>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
@@ -77,6 +65,18 @@ namespace TransitionApp
             services.AddTransient<IDriverAppService, DriverAppService>();
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddTransient<IDriverService, DriverService>();
+            services.AddScoped<IRequestHandler<CreateDriverCommand, object>, DriverCommandHandler>();
+
+            // DI Invoice
+            services.AddTransient<IInvoiceAppService, InvoiceAppService>();
+            services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddTransient<IInvoiceService, InvoiceService>();
+
+
+            // DI Schedule
+            services.AddTransient<IScheduleAppService, ScheduleAppService>();
+            services.AddScoped<IScheduleRepository, ScheduleRepository>();
+            services.AddTransient<IScheduleService, ScheduleService>();
 
             #region Add event
 
@@ -93,11 +93,11 @@ namespace TransitionApp
             //        {
             //            settings.Username("guest");
             //            settings.Password("guest");
-                        
+
             //        });
             //        cfg.ReceiveEndpoint(host, "AbcHandler", e =>
             //        {
-                        
+
             //            //e.Consumer<VehicleConsume>();
             //            e.Handler<VehicleReadModel>(context =>
             //            {
@@ -135,7 +135,8 @@ namespace TransitionApp
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
 
             // add swagger
-            services.AddSwaggerGen(c => {
+            services.AddSwaggerGen(c =>
+            {
                 c.SwaggerDoc("v1", new Info
                 {
                     Version = "v1",
@@ -168,7 +169,8 @@ namespace TransitionApp
             app.UseGraphiQl();
             app.UseMvc();
             app.UseSwagger();
-            app.UseSwaggerUI(c => {
+            app.UseSwaggerUI(c =>
+            {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Test API V1");
             });
 

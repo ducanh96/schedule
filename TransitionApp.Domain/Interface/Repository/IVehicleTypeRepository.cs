@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using TransitionApp.Domain.Model.Entity;
 using TransitionApp.Domain.ReadModel.VehicleType;
@@ -16,6 +14,8 @@ namespace TransitionApp.Domain.Interface.Repository
         #region Read
         Task<VehicleTypeReadModel> Get(int id);
         IEnumerable<VehicleTypeReadModel> GetAll();
+        IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids);
+
         #endregion
     }
 }

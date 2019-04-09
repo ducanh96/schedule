@@ -17,6 +17,8 @@ namespace TransitionApp.Domain.ReadModel
         public DateTime UpdatedAt { get; set; }
         public int VehicleType { get; set; }
         public double MaxLoad { get; set; }
+        public int Driver { get; set; }
+        public string Note { get; set; }
 
 
     }

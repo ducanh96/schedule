@@ -10,7 +10,7 @@ namespace TransitionApp.Service.Interface
     public interface IVehicleService
     {
         Task<VehicleReadModel> Get();
-        //Task<VehicleReadModel> GetById(int id);
+        VehicleReadModel GetById(int id);
         SearchVehicleReadModel GetAll(int page, int pageSize, SearchVehicleModel vehicleModel);
         bool checkExist(int id);
     }

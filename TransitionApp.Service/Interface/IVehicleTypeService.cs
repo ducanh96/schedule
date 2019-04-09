@@ -10,5 +10,6 @@ namespace TransitionApp.Service.Interface
     {
         IEnumerable<VehicleTypeReadModel> GetAll();
         Task<VehicleTypeReadModel> Get(int id);
+        IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids);
     }
 }

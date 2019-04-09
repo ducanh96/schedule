@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using TransitionApp.Domain.Interface.Repository;
+﻿using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel.Driver;
+using TransitionApp.Domain.ReadModel.Driver.DAO;
 using TransitionApp.Service.Interface;
 
 namespace TransitionApp.Service.Implement
 {
-    public class DriverService:IDriverService
+    public class DriverService : IDriverService
     {
         private readonly IDriverRepository _driverRepository;
 
@@ -16,9 +13,17 @@ namespace TransitionApp.Service.Implement
         {
             _driverRepository = driverRepository;
         }
-        public async Task<IEnumerable<DriverReadModel>> GetAll()
+
+        public DriverReadModel Get(int id)
         {
-            return  await _driverRepository.GetAll();
+            if (id == 0)
+                return null;
+            return _driverRepository.Get(id);
+        }
+
+        public SearchDriverReadModel GetAll(int page, int pageSize, SearchDriverModel driverModel)
+        {
+            return _driverRepository.GetAll(page, pageSize, driverModel);
         }
     }
 }

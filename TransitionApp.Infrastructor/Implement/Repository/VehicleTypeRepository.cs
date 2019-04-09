@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Text;
 using System.Threading.Tasks;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Model.Entity;
@@ -22,7 +20,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
 
         #region Write
 
-        
+
         public async Task<bool> Add(VehicleType vehicleType)
         {
             using (IDbConnection conn = Connection)
@@ -34,12 +32,12 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Code = vehicleType.Code.Value,
                     Name = vehicleType.Name.Full
                 });
-                
+
                 return await Task.FromResult(result > 0);
             }
         }
 
-        public Task<bool> Delete(int  vehicleTypeId)
+        public Task<bool> Delete(int vehicleTypeId)
         {
             using (IDbConnection conn = Connection)
             {
@@ -73,10 +71,26 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     " FROM VehicleType " +
                     " Where Id = @Id ";
 
-                var result = conn.QueryFirstOrDefault<VehicleTypeReadModel>(sQuery, new {
+                var result = conn.QueryFirstOrDefault<VehicleTypeReadModel>(sQuery, new
+                {
                     Id = id
                 });
                 return Task.FromResult(result);
+            }
+        }
+
+        public IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = "SELECT Id, Code, Name " +
+                    " FROM VehicleType " +
+                    " WHERE Id IN @Ids;";
+                var result = conn.Query<VehicleTypeReadModel>(sQuery, new
+                {
+                    Ids = ids
+                });
+                return result;
             }
         }
 

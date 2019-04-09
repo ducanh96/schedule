@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TransitionApp.Application.Interface;
 using TransitionApp.Application.RequestModel;
@@ -15,7 +14,6 @@ using TransitionApp.Domain.Notifications;
 using TransitionApp.Domain.ReadModel;
 using TransitionApp.Domain.ReadModel.Driver;
 using TransitionApp.Domain.ReadModel.Vehicle;
-using TransitionApp.Domain.ReadModel.VehicleType;
 using TransitionApp.Service.Interface;
 using static TransitionApp.Application.Shared.Common;
 
@@ -27,15 +25,18 @@ namespace TransitionApp.Application.Implement
         private readonly IMediatorHandler _bus;
         private readonly DomainNotificationHandler _notifications;
         private readonly IVehicleTypeService _vehicleTypeService;
+        private readonly IDriverService _driverService;
 
         public VehicleAppService(IVehicleService vehicleService, IMediatorHandler bus
             , INotificationHandler<DomainNotification> notifications
+            , IDriverService driverService
             , IVehicleTypeService vehicleTypeService)
         {
             _vehicleService = vehicleService;
             _bus = bus;
             _notifications = (DomainNotificationHandler)notifications;
             _vehicleTypeService = vehicleTypeService;
+            _driverService = driverService;
         }
 
         #region Write
@@ -93,7 +94,7 @@ namespace TransitionApp.Application.Implement
                     Note = vehicleRequest.Note,
                     TypeID = vehicleRequest.TypeID,
                     DriverID = vehicleRequest.TypeID
-                   
+
                 };
                 var result = _bus.SendCommand(vehicleCommand);
                 Task<object> status = result as Task<object>;
@@ -160,9 +161,56 @@ namespace TransitionApp.Application.Implement
             return response;
         }
 
+
         #endregion
 
         #region Read
+
+        public Task<GetVehicleResponse> Get(int id)
+        {
+            try
+            {
+                var vehicle = _vehicleService.GetById(id);
+                var result = new
+                {
+                    Code = vehicle.Code,
+                    Driver = _driverService.Get(vehicle.Driver),
+                    ID = vehicle.Id,
+                    LicensePlate = vehicle.LicensePlate,
+                    MaxLoad = vehicle.MaxLoad,
+                    Type = _vehicleTypeService.Get(vehicle.VehicleType).Result,
+                    Name = vehicle.Name,
+                    Note = vehicle.Note
+                };
+
+                return Task.FromResult(new GetVehicleResponse
+                {
+                    Status = new StatusResponse
+                    {
+                        Content = "",
+                        OK = true
+                    },
+                    Vehicles = new List<object>
+                    {
+                        result
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new GetVehicleResponse
+                {
+                    Status = new StatusResponse
+                    {
+                        Content = ex.Message,
+                        OK = false
+                    },
+                    
+                });
+            }
+
+        }
+
 
         public Task<SearchVehicleResponse> GetAll(SearchVehicleRequest request)
         {

@@ -25,5 +25,10 @@ namespace TransitionApp.Service.Implement
         {
             return _vehicleTypeRepository.GetAll();
         }
+
+        public IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids)
+        {
+            return _vehicleTypeRepository.GetByIds(ids);
+        }
     }
 }

@@ -15,6 +15,7 @@ namespace TransitionApp.Controllers
     public class VehicleController : ControllerBase
     {
         private readonly IVehicleAppService _vehicleAppService;
+        
         public VehicleController(IVehicleAppService vehicleAppService)
         {
             _vehicleAppService = vehicleAppService;
@@ -36,10 +37,17 @@ namespace TransitionApp.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        [Route("/edit")]
         public void Put(int id, [FromBody] string value)
         {
+
         }
 
+
+        [HttpGet("{id}/edit")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var result = await _vehicleAppService.Get(id);
+            return Ok(result);
+        }
     }
 }
