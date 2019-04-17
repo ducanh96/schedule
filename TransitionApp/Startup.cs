@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.Swagger;
+using System.IO;
 using TransitionApp.Application.Implement;
 using TransitionApp.Application.Interface;
 using TransitionApp.Domain.Bus;
@@ -53,6 +55,7 @@ namespace TransitionApp
             services.AddTransient<IVehicleService, VehicleService>();
             services.AddScoped<IRequestHandler<CreateVehicleCommand, object>, VehicleCommandHandler>();
             services.AddScoped<IRequestHandler<EditVehicleCommand, object>, VehicleCommandHandler>();
+            services.AddScoped<IRequestHandler<ImportVehicleCommand, object>, VehicleCommandHandler>();
 
             // DI VehicleType
             services.AddTransient<IVehicleTypeAppService, VehicleTypeAppService>();
@@ -66,6 +69,9 @@ namespace TransitionApp
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddTransient<IDriverService, DriverService>();
             services.AddScoped<IRequestHandler<CreateDriverCommand, object>, DriverCommandHandler>();
+            services.AddScoped<IRequestHandler<EditDriverCommand, object>, DriverCommandHandler>();
+            services.AddScoped<IRequestHandler<ImportDriverCommand, object>, DriverCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteDriverCommand, object>, DriverCommandHandler>();
 
             // DI Invoice
             services.AddTransient<IInvoiceAppService, InvoiceAppService>();
@@ -145,11 +151,13 @@ namespace TransitionApp
                 });
             });
 
+            services.AddSingleton<IFileProvider>(
+               new PhysicalFileProvider(
+                   Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
 
             var sp = services.BuildServiceProvider();
             services.AddSingleton<ISchema>(new TransitionAppSchema(new FuncDependencyResolver(type => sp.GetService(type))));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
 
         }
 

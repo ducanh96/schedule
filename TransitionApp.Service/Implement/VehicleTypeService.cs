@@ -16,7 +16,7 @@ namespace TransitionApp.Service.Implement
             _vehicleTypeRepository = vehicleTypeRepository;
         }
 
-        public Task<VehicleTypeReadModel> Get(int id)
+        public VehicleTypeReadModel Get(int id)
         {
             return _vehicleTypeRepository.Get(id);
         }
@@ -24,6 +24,11 @@ namespace TransitionApp.Service.Implement
         public IEnumerable<VehicleTypeReadModel> GetAll()
         {
             return _vehicleTypeRepository.GetAll();
+        }
+
+        public VehicleTypeReadModel GetByCode(string codeDriver)
+        {
+            return _vehicleTypeRepository.GetByCode(codeDriver);
         }
 
         public IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids)

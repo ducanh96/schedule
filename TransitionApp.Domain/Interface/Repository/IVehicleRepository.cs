@@ -24,6 +24,8 @@ namespace TransitionApp.Domain.Interface.Repository
         #region Write
         VehicleModel Add(Vehicle vehicle);
         Task Delete(Identity identity);
+        VehicleModel Edit(Vehicle vehicle);
+        bool ImportExcel(List<Vehicle> vehicles);
         #endregion
 
     }

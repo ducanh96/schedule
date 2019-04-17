@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel;
+using TransitionApp.Domain.ReadModel.Customer;
+using TransitionApp.Domain.ReadModel.Invoice;
 using TransitionApp.Domain.ReadModel.Schedule;
 using TransitionApp.Domain.ReadModel.Schedule.DAO;
 
@@ -82,7 +84,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             }
         }
 
-        public IEnumerable<RouteReadModel> GetBySchedule(int scheduleId)
+        public IEnumerable<RouteReadModel> GetRouteBySchedule(int scheduleId)
         {
             using (IDbConnection conn = Connection)
             {
@@ -98,6 +100,56 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Id = scheduleId
                 });
                 return result;
+            }
+        }
+
+        public IEnumerable<RouteInfoReadModel> GetRouteInfo(int routeId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"
+                     Select [Id], [CustomerId], [RouterId], [DriverRole]
+                            , [FromTime], [ToTime], [IsServed], [ServerTime]
+                        
+                    From dbo.RouteInfo
+                    WHERE RouterId = @RouteId ";
+                var result = conn.Query<RouteInfoReadModel>(sQuery, new
+                {
+                    RouteId = routeId
+                });
+                return result;
+            }
+        }
+
+        public CustomerDetailReadModel GetInforCustomerOfRoute(int customerId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"
+                       Declare @AddressId int;
+                     Select @AddressId = AddressId From dbo.Customer 
+                             WHERE Id = @CustomerId;
+                     Select [Id], [Code], [Name], [AddressId]
+                             From dbo.Customer 
+                             WHERE Id = @CustomerId;
+            
+                      Select [Id], [City], [Country], [District], [Lat], [Lng], [Street], [StreetNumber]
+                            From dbo.Address
+                      Where Id = @AddressId;";
+                using (var multi = conn.QueryMultiple(sQuery, new
+                {
+                    CustomerId = customerId
+                }))
+                {
+                    var customer = multi.ReadFirst<CustomerReadModel>();
+                    var address = multi.ReadFirst<AddressReadModel>();
+                    CustomerDetailReadModel searchSchedule = new CustomerDetailReadModel
+                    {
+                        Address = address,
+                        Customer = customer
+                    };
+                    return searchSchedule;
+                }
             }
         }
 

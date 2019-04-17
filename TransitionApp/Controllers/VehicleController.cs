@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EPPlus.Core.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 using TransitionApp.Application.Interface;
 using TransitionApp.Application.RequestModel;
 using TransitionApp.Application.RequestModel.Vehicle;
+using TransitionApp.Application.ResponseModel;
 
 namespace TransitionApp.Controllers
 {
@@ -35,11 +39,21 @@ namespace TransitionApp.Controllers
             return Ok(result);
         }
 
+        [HttpPost]
+        [Route("UploadFile")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            var result = await _vehicleAppService.ImportExcel(file);
+            return Ok(result);
+        }
+
+
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Update(int id, [FromBody] CreateVehicleRequests request)
         {
-
+            var result = await _vehicleAppService.Edit(request);
+            return Ok(result);
         }
 
 
@@ -47,6 +61,13 @@ namespace TransitionApp.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var result = await _vehicleAppService.Get(id);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(DeleteVehicleRequest request)
+        {
+            var result = await _vehicleAppService.Delete(request);
             return Ok(result);
         }
     }

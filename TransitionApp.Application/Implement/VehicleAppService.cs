@@ -1,4 +1,7 @@
-﻿using MediatR;
+﻿using EPPlus.Core.Extensions;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +96,7 @@ namespace TransitionApp.Application.Implement
                     Name = vehicleRequest.Name,
                     Note = vehicleRequest.Note,
                     TypeID = vehicleRequest.TypeID,
-                    DriverID = vehicleRequest.TypeID
+                    DriverID = vehicleRequest.DriverID
 
                 };
                 var result = _bus.SendCommand(vehicleCommand);
@@ -118,49 +121,129 @@ namespace TransitionApp.Application.Implement
         }
 
 
-        public BaseResponse Delete(DeleteVehicleRequest vehicleRequest)
+        public Task<StatusResponse> Delete(DeleteVehicleRequest vehicleRequest)
         {
-            DeleteVehicleCommand deleteVehicleCommand = new DeleteVehicleCommand
+            try
             {
-                //Id = vehicleRequest.Id
-            };
-            var result = _bus.SendCommand(deleteVehicleCommand);
-            Task<object> status = result as Task<object>;
-            if ((bool)status.Result)
-            {
-                return new BaseResponse(ResponseCode.OK.ToString(), code: ResponseCode.OK);
+                DeleteVehicleCommand deleteVehicleCommand = new DeleteVehicleCommand
+                {
+                    ID = vehicleRequest.Id
+                };
+                var result = _bus.SendCommand(deleteVehicleCommand);
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = true
+                    
+                });
             }
-            return new BaseResponse(ResponseCode.Fail.ToString(), code: ResponseCode.Fail);
+            catch (Exception ex)
+            {
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = false,
+                    Content = ex.Message
+                });
+
+            }
+         
+           
         }
 
-        public BaseResponse Edit(CreateVehicleRequest vehicleRequest)
+        public Task<StatusResponse> Edit(CreateVehicleRequests vehicleRequest)
         {
-            EditVehicleCommand vehicleCommand = new EditVehicleCommand
+            try
             {
-
-                //Volume = vehicleRequest.Volume,
-                //Capacity = vehicleRequest.Capacity,
-                //Image = vehicleRequest.Image,
-                //LicensePlate = vehicleRequest.LicensePlate,
-                //TypeVehicle = vehicleRequest.TypeVehicle,
-                //Id = vehicleRequest.Id
-            };
-            var result = _bus.SendCommand(vehicleCommand);
-            Task<object> status = result as Task<object>;
-            if ((bool)status.Result)
-            {
-                return new BaseResponse(ResponseCode.OK.ToString(), code: ResponseCode.OK);
+                EditVehicleCommand vehicleCommand = new EditVehicleCommand
+                {
+                    Code = vehicleRequest.Code,
+                    DriverID = vehicleRequest.DriverID,
+                    ID = vehicleRequest.ID,
+                    LicensePlate = vehicleRequest.LicensePlate,
+                    MaxLoad = vehicleRequest.MaxLoad,
+                    Name = vehicleRequest.Name,
+                    Note = vehicleRequest.Note,
+                    TypeID = vehicleRequest.TypeID,
+                    Volume = string.Join('-', vehicleRequest.MaxVolume).ToString()
+                };
+                var result = _bus.SendCommand(vehicleCommand);
+                Task<object> status = result as Task<object>;
+                var id = (VehicleModel)status.Result;
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = true,
+                    Content = id.Id.ToString()
+                });
             }
-            BaseResponse response = new BaseResponse();
-            if (_notifications.HasNotifications())
+            catch (Exception ex)
             {
-                var message = _notifications.GetNotifications().FirstOrDefault().Value ?? "";
-                response.Message = message as string;
-                response.Code = (int)ResponseCode.Fail;
+                Console.WriteLine(ex.Message);
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = false,
+                    Content = ex.Message
+                });
             }
-            return response;
         }
 
+        public Task<StatusResponse> ImportExcel(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Task.FromResult(new StatusResponse
+                    {
+                        Content = "Not file",
+                        OK = false
+                    });
+                }
+                //var path = Path.Combine(
+                //            Directory.GetCurrentDirectory(), "wwwroot",
+                //            file.FileName);
+
+                ExcelPackage excelPackage = new ExcelPackage(file.OpenReadStream());
+                // map du lieu tu excel thanh object
+                var data = excelPackage.ToList<VehicleExcelModel>();
+                List<DataImportVehicle> dataImportVehicles = new List<DataImportVehicle>();
+
+                data.ForEach(x =>
+                {
+                    dataImportVehicles.Add(new DataImportVehicle
+                    {
+                        Code = x.Code,
+                        DriverID = _driverService.GetByCode(x.CodeDriver)?.ID,
+                        LicensePlate = x.LicensePlate,
+                        MaxLoad = x.MaxLoad,
+                        Name = x.Name,
+                        Note = x.Note,
+                        TypeVehicleID = _vehicleTypeService.GetByCode(x.TypeVehicle)?.ID
+                        
+                    });
+                });
+
+                ImportVehicleCommand vehicleCommand = new ImportVehicleCommand
+                {
+                    Vehicles = dataImportVehicles
+                   
+                };
+
+                var result = _bus.SendCommand(vehicleCommand);
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = true,
+                    Content = ""
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new StatusResponse
+                {
+                    Content = ex.Message,
+                    OK = false
+                });
+            }
+        }
 
         #endregion
 
@@ -178,9 +261,10 @@ namespace TransitionApp.Application.Implement
                     ID = vehicle.Id,
                     LicensePlate = vehicle.LicensePlate,
                     MaxLoad = vehicle.MaxLoad,
-                    Type = _vehicleTypeService.Get(vehicle.VehicleType).Result,
+                    Type = _vehicleTypeService.Get(vehicle.VehicleType),
                     Name = vehicle.Name,
-                    Note = vehicle.Note
+                    Note = vehicle.Note,
+                    MaxVolume = vehicle.Volume?.Split('-').Select(int.Parse)
                 };
 
                 return Task.FromResult(new GetVehicleResponse
@@ -198,6 +282,7 @@ namespace TransitionApp.Application.Implement
             }
             catch (Exception ex)
             {
+
                 return Task.FromResult(new GetVehicleResponse
                 {
                     Status = new StatusResponse
@@ -205,7 +290,7 @@ namespace TransitionApp.Application.Implement
                         Content = ex.Message,
                         OK = false
                     },
-                    
+
                 });
             }
 
@@ -214,37 +299,61 @@ namespace TransitionApp.Application.Implement
 
         public Task<SearchVehicleResponse> GetAll(SearchVehicleRequest request)
         {
-            var vehicleModel = new SearchVehicleModel
+            try
             {
-                Code = request.code,
-                LicensePlate = request.licensePlate,
-                Name = request.name,
-                VehicleType = request.vehicleTypeID
-            };
-            var infoSearchVehicle = _vehicleService.GetAll(request.Page, request.PageSize, vehicleModel);
-            var allVehicle = from a in infoSearchVehicle.Vehicles
-                             select new
-                             {
-                                 Code = a.Code,
-                                 Type = _vehicleTypeService.Get(a.VehicleType).Result,
-                                 Name = a.Name,
-                                 LicensePlate = a.LicensePlate,
-                                 ID = a.Id,
-                                 MaxLoad = a.MaxLoad
-                             };
-            var result = new SearchVehicleResponse
-            {
-                Page = infoSearchVehicle.PageInfo.Page,
-                PageSize = infoSearchVehicle.PageInfo.PageSize,
-                Total = infoSearchVehicle.PageInfo.Total,
-                Status = new StatusResponse
+                var vehicleModel = new SearchVehicleModel
                 {
-                    Content = "",
-                    OK = true
-                },
-                Vehicles = allVehicle.ToList()
-            };
-            return Task.FromResult(result);
+                    Code = request.code,
+                    LicensePlate = request.licensePlate,
+                    Name = request.name,
+                    VehicleType = request.vehicleTypeID
+                };
+                var infoSearchVehicle = _vehicleService.GetAll(request.Page, request.PageSize, vehicleModel);
+                var allVehicle = from a in infoSearchVehicle.Vehicles
+                                 select new
+                                 {
+                                     Code = a.Code,
+                                     Type = _vehicleTypeService.Get(a.VehicleType),
+                                     Name = a.Name,
+                                     LicensePlate = a.LicensePlate,
+                                     ID = a.Id,
+                                     MaxLoad = a.MaxLoad,
+                                     Driver = _driverService.Get(a.Driver),
+                                     MaxVolume = a.Volume?.Split('-').Select(int.Parse),
+                                     Note = a.Note
+                                 };
+                var result = new SearchVehicleResponse
+                {
+                    Page = infoSearchVehicle.PageInfo.Page,
+                    PageSize = infoSearchVehicle.PageInfo.PageSize,
+                    Total = infoSearchVehicle.PageInfo.Total,
+                    Status = new StatusResponse
+                    {
+                        Content = "",
+                        OK = true
+                    },
+                    Vehicles = allVehicle.ToList()
+                };
+                return Task.FromResult(result);
+            }
+            catch (Exception ex)
+            {
+
+                var result = new SearchVehicleResponse
+                {
+                    Page = request.Page,
+                    PageSize = request.PageSize,
+                    Total = 0,
+                    Status = new StatusResponse
+                    {
+                        Content = ex.Message,
+                        OK = false
+                    },
+                    Vehicles = null
+                };
+                return Task.FromResult(result);
+            }
+          
         }
 
         public async Task<VehicleResponse> GetAsync()
@@ -257,18 +366,19 @@ namespace TransitionApp.Application.Implement
                 {
                     new DriverReadModel
                     {
-                        Id = 1
+                        ID = 1
 
                     },
                     new DriverReadModel
                     {
-                        Id = 2
+                        ID = 2
 
                     }
                 },
                 Status = 1
             };
         }
+
         #endregion
 
 

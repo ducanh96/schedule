@@ -48,6 +48,7 @@ namespace TransitionApp
             //bus.Stop();
 
             CreateWebHostBuilder(args).Build().Run();
+     
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

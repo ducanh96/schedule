@@ -30,7 +30,7 @@ namespace TransitionApp.Domain.ReadModel.Driver
 
 
 
-        public int Id { get; set; }
+        public int ID { get; set; }
         // thieu userID
         public int UserID { get; set; }
 

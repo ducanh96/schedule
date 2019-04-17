@@ -12,9 +12,10 @@ namespace TransitionApp.Domain.Interface.Repository
         Task<bool> Delete(int vehicleTypeId);
         #endregion
         #region Read
-        Task<VehicleTypeReadModel> Get(int id);
+        VehicleTypeReadModel Get(int id);
         IEnumerable<VehicleTypeReadModel> GetAll();
         IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids);
+        VehicleTypeReadModel GetByCode(string codeDriver);
 
         #endregion
     }

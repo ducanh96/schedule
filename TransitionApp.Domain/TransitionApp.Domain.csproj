@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="CommandHanders\VehicleTypeCommandHandler.cs~RF1922caa.TMP" />
+    <None Remove="Interface\Repository\IVehicleTypeRepository.cs~RF7eb32e.TMP" />
   </ItemGroup>
 
   <ItemGroup>

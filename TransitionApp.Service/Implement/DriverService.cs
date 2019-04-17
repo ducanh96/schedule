@@ -25,5 +25,10 @@ namespace TransitionApp.Service.Implement
         {
             return _driverRepository.GetAll(page, pageSize, driverModel);
         }
+
+        public DriverReadModel GetByCode(string code)
+        {
+            return _driverRepository.GetByCode(code);
+        }
     }
 }

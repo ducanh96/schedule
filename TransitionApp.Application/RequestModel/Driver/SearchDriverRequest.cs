@@ -12,5 +12,6 @@ namespace TransitionApp.Application.RequestModel.Driver
         public string PhoneNumber { get; set; }
         public string Name { get; set; }
 
+
     }
 }

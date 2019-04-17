@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using TransitionApp.Domain.Interface.Repository;
+using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Invoice;
 using TransitionApp.Service.Interface;
 

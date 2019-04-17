@@ -9,7 +9,7 @@ namespace TransitionApp.Domain.ReadModel
     {
         public int Id { get; set; }
         public string LicensePlate { get; set; }
-        public double Volume { get; set; }
+        public string Volume { get; set; }
         public double Capacity { get; set; }
         public string Code { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -11,5 +11,6 @@ namespace TransitionApp.Service.Interface
     {
         SearchDriverReadModel GetAll(int page, int pageSize, SearchDriverModel driverModel);
         DriverReadModel Get(int id);
+        DriverReadModel GetByCode(string code);
     }
 }

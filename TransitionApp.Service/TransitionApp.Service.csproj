@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Implement\VehicleTypeService.cs~RF7ea1e8.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TransitionApp.Domain\TransitionApp.Domain.csproj" />
     <ProjectReference Include="..\TransitionApp.Infrastructor\TransitionApp.Infrastructor.csproj" />
   </ItemGroup>

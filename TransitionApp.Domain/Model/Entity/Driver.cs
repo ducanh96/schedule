@@ -54,5 +54,17 @@ namespace TransitionApp.Domain.Model.Entity
         {
             Id = id;
         }
+
+        public Driver(Identity id, Name name, Code code, PhoneNumber phoneNumber, Status status, Day dateOfBirth, CardNumber cardNumber, Sex sex, Day startDate) : this(id)
+        {
+            Name = name;
+            Code = code;
+            PhoneNumber = phoneNumber;
+            Status = status;
+            DoB = dateOfBirth;
+            IDCardNumber = cardNumber;
+            Sex = sex;
+            StartDate = startDate;
+        }
     }
 }

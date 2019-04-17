@@ -1,4 +1,8 @@
-﻿namespace TransitionApp.Domain.ReadModel.Invoice
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace TransitionApp.Domain.ReadModel.Customer
 {
     public class CustomerReadModel
     {

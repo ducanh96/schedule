@@ -13,11 +13,14 @@ namespace TransitionApp.Domain.Interface.Repository
         #region Read
         SearchDriverReadModel GetAll(int page, int pageSize, SearchDriverModel driverModel);
         DriverReadModel Get(int id);
+        DriverReadModel GetByCode(string code);
         #endregion
 
         #region Write
         DriverModel Add(Driver driver);
-       
+        DriverModel Update(Driver driver);
+        bool ImportExcel(List<Driver> drivers);
+        bool Delete(int id);
         #endregion
     }
 }

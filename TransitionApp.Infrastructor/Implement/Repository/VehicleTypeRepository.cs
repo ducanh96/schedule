@@ -63,7 +63,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             }
         }
 
-        public Task<VehicleTypeReadModel> Get(int id)
+        public VehicleTypeReadModel Get(int id)
         {
             using (IDbConnection conn = Connection)
             {
@@ -75,7 +75,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 {
                     Id = id
                 });
-                return Task.FromResult(result);
+                return result;
             }
         }
 
@@ -89,6 +89,22 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 var result = conn.Query<VehicleTypeReadModel>(sQuery, new
                 {
                     Ids = ids
+                });
+                return result;
+            }
+        }
+
+        public VehicleTypeReadModel GetByCode(string codeDriver)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = "SELECT Id, Code, Name " +
+                    " FROM VehicleType " +
+                    " Where LOWER(Code) = LOWER(@Code) ";
+
+                var result = conn.QueryFirstOrDefault<VehicleTypeReadModel>(sQuery, new
+                {
+                    Code = codeDriver
                 });
                 return result;
             }

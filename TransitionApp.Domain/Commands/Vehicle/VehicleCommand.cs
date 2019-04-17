@@ -24,7 +24,7 @@ namespace TransitionApp.Domain.Commands.Vehicle
         public int TypeID { get; set; }
         public string Note { get; set; }
         public string LicensePlate { get; set; }
-
+        public string Volume { get; set; }
 
     }
 }

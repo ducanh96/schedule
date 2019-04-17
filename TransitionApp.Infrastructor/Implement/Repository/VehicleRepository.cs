@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using TransitionApp.Domain.Interface.Repository;
-using TransitionApp.Domain.ReadModel;
-using Dapper;
+﻿using Dapper;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
+using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Model.Entity;
-using System.Linq;
 using TransitionApp.Domain.Model.ValueObject;
+using TransitionApp.Domain.ReadModel;
 using TransitionApp.Domain.ReadModel.Vehicle;
 
 namespace TransitionApp.Infrastructor.Implement.Repository
@@ -79,7 +77,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                         
                         IF @totalRow > 0
                            BEGIN 
-                            SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name, MaxLoad FROM dbo.Vehicle
+                            SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name, MaxLoad, Driver, Note FROM dbo.Vehicle
                                WHERE (@Code IS NULL OR LOWER(Code) = LOWER(@Code))
                                AND (@LicensePlate IS NULL OR LOWER(LicensePlate) = LOWER(@LicensePlate))
                                AND (@VehicleType = 0  OR VehicleType = @VehicleType)
@@ -88,33 +86,34 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                            END
                         ELSE
                           BEGIN
-                             SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name FROM dbo.Vehicle
+                             SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name, Driver, Note FROM dbo.Vehicle
                                WHERE 1 != 1;
                           END
                      
                     
                      SELECT @page as Page, @pageSize as PageSize, @totalRow as Total; 
                     END ";
-              
+
                 //var result = conn.QueryAsync<VehicleReadModel>(sQuery, new
                 //{
                 //    page = page,
                 //    pageSize = pageSize
                 //});
-              
 
-                    using (var multi = conn.QueryMultiple(sQuery, new
-                        {   page = page,
-                            pageSize = pageSize,
-                            Code  = vehicleModel.Code,
-                            LicensePlate = vehicleModel.LicensePlate,
-                            VehicleType = vehicleModel.VehicleType,
-                            Name = vehicleModel.Name,
-                    }))
-                    {
-                        var vehicle = multi.Read<VehicleReadModel>();
-                        var invoiceItems = multi.ReadFirst<PagingReadModel>();
-                      
+
+                using (var multi = conn.QueryMultiple(sQuery, new
+                {
+                    page = page,
+                    pageSize = pageSize,
+                    Code = vehicleModel.Code,
+                    LicensePlate = vehicleModel.LicensePlate,
+                    VehicleType = vehicleModel.VehicleType,
+                    Name = vehicleModel.Name,
+                }))
+                {
+                    var vehicle = multi.Read<VehicleReadModel>();
+                    var invoiceItems = multi.ReadFirst<PagingReadModel>();
+
                     SearchVehicleReadModel searchVehicle = new SearchVehicleReadModel
                     {
                         Vehicles = vehicle,
@@ -123,7 +122,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     return searchVehicle;
                 }
 
-               
+
             }
         }
 
@@ -158,7 +157,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 // thieu volumne
                 string sQuery = @"Insert Into 
                         Vehicle(LicensePlate, 
-                               
+                                Volume
                                 Code,
                                 VehicleType,
                                 Driver,
@@ -167,7 +166,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                 Note
                                 )" +
                     " Values(@LicensePlate, " +
-                   
+                    "         @Volume, " +
                     "         @Code, " +
                     "         @VehicleType, " +
                     "         @Driver, " +
@@ -178,7 +177,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     "SELECT Id from Vehicle where Id = CAST(SCOPE_IDENTITY() as int)";
                 var result = conn.QueryFirst<VehicleModel>(sQuery, new
                 {
-                    LicensePlate  = vehicle.LicensePlate.Number,
+                    LicensePlate = vehicle.LicensePlate.Number,
                     Code = vehicle.Code.Value,
                     Driver = vehicle.Driver.Id.Value,
                     Name = vehicle.Name.Full,
@@ -208,13 +207,112 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             }
         }
 
+        public VehicleModel Edit(Vehicle vehicle)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                // thieu volumne
+                string sQuery = @"Update Vehicle  
+                       SET LicensePlate = @LicensePlate,
+                                Code =  @Code,
+                                VehicleType = @VehicleType,
+                                Driver = @Driver,
+                                Name = @Name,
+                                MaxLoad = @MaxLoad,
+                                Note = @Note,
+                                Volume = @Volume
+                       Where Id = @Id;
+                    SELECT @Id;";
+                var result = conn.QueryFirst<VehicleModel>(sQuery, new
+                {
+                    LicensePlate = vehicle.LicensePlate.Number,
+                    Code = vehicle.Code.Value,
+                    Driver = vehicle.Driver.Id.Value,
+                    Name = vehicle.Name.Full,
+                    MaxLoad = vehicle.MaxLoad.Value,
+                    VehicleType = vehicle.VehicleType.Id.Value,
+                    Note = vehicle.Note.Value,
+                    Volume = vehicle.Volume.Size,
+                    Id = vehicle.Id.Value
+                });
+
+                Console.Write(result);
+                return result;
+            }
+        }
+
+        public bool ImportExcel(List<Vehicle> vehicles)
+        {
+            List<VehicleImportExcelModel> vehiclesImport = new List<VehicleImportExcelModel>();
+            vehicles.ForEach(x =>
+            {
+                vehiclesImport.Add(new VehicleImportExcelModel
+                {
+                    Code = x.Code.Value,
+                    Driver = x.Driver.Id,
+                    LicensePlate = x.LicensePlate.Number,
+                    MaxLoad = x.MaxLoad.Value,
+                    Name = x.Name.Full,
+                    Note = x.Note.Value,
+                    VehicleType = x.VehicleType.Id,
+                    Volume = x.Volume.Size
+                });
+            });
+
+           
+                using (IDbConnection conn = Connection)
+                {
+                    conn.Open();
+                    var trans = conn.BeginTransaction();
+                    // thieu volumne
+                    string sQuery = @"Insert Into 
+                        Vehicle(LicensePlate, 
+                                Volume,
+                                Code,
+                                VehicleType,
+                                Driver,
+                                Name,
+                                MaxLoad,
+                                Note
+                                ) " +
+                           " Values( @LicensePlate, " +
+                           "         @Volume, " +
+                           "         @Code, " +
+                           "         @VehicleType, " +
+                           "         @Driver, " +
+                           "         @Name, " +
+                           "         @MaxLoad, " +
+                           "         @Note " +
+                           "        ); ";
+
+                    var result = conn.Execute(sQuery, vehiclesImport, transaction: trans);
+                    trans.Commit();
+                    Console.Write(result);
+                    return result > 0;
+                }
+
+          
+
+
+        }
+
         #endregion
 
 
 
+        private class VehicleImportExcelModel
+        {
+            public string Code { get; set; }
+            public int VehicleType { get; set; }
+            public double MaxLoad { get; set; }
+            public string Name { get; set; }
+            public int Driver { get; set; }
+            public string Note { get; set; }
+            public string LicensePlate { get; set; }
+            public string Volume { get; set; }
+        }
 
 
-   
         public IDbConnection Connection
         {
             get

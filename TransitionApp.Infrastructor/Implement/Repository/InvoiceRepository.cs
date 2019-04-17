@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel;
+using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Invoice;
 
 namespace TransitionApp.Infrastructor.Implement.Repository

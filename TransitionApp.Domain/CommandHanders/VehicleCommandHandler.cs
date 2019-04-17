@@ -19,7 +19,8 @@ namespace TransitionApp.Domain.CommandHanders
         CommandHandler,
         IRequestHandler<CreateVehicleCommand, object>,
         IRequestHandler<DeleteVehicleCommand, object>,
-        IRequestHandler<EditVehicleCommand, object>
+        IRequestHandler<EditVehicleCommand, object>,
+        IRequestHandler<ImportVehicleCommand, object>
     {
         private readonly IVehicleRepository _vehicleRepository;
         private readonly IMediatorHandler _bus;
@@ -46,7 +47,8 @@ namespace TransitionApp.Domain.CommandHanders
                 name: new Name(command.Name),
                 vehicleType: new VehicleType(command.TypeID),
                 note: new Note(command.Note),
-                code: new Code(command.Code)
+                code: new Code(command.Code),
+                volume: new Volume(command.Volume)
                 );
             var vehicleModel =  _vehicleRepository.Add(vehicle);
             _bus.RaiseEvent(new DomainNotification("", "Create successfully!!", TypeNotification.Success));
@@ -74,8 +76,44 @@ namespace TransitionApp.Domain.CommandHanders
                 NotifyValidationErrors(command);
                 return Task.FromResult(false as object);
             }
-            Console.WriteLine("654321");
-            return Task.FromResult(false as object);
+
+            Vehicle vehicle = new Vehicle(
+              id: command.ID,
+              licensePlate: new LicensePlate(command.LicensePlate),
+              driver: new Driver(new Identity(command.DriverID)),
+              maxLoad: new MaxLoad(command.MaxLoad),
+              name: new Name(command.Name),
+              vehicleType: new VehicleType(command.TypeID),
+              note: new Note(command.Note),
+              code: new Code(command.Code),
+              volume: new Volume(command.Volume)
+              
+              );
+            var vehicleModel = _vehicleRepository.Edit(vehicle);
+            return Task.FromResult(vehicleModel as object);
+        }
+
+        public Task<object> Handle(ImportVehicleCommand request, CancellationToken cancellationToken)
+        {
+            List<Vehicle> vehicles = new List<Vehicle>();
+            request.Vehicles.ForEach(x =>
+            {
+                var vehicle = new Vehicle(
+                    id: x.ID,
+                    licensePlate: new LicensePlate(x.LicensePlate),
+                    driver: new Driver(new Identity(x.DriverID.Value)),
+                    maxLoad: new MaxLoad(x.MaxLoad),
+                    name: new Name(x.Name),
+                    vehicleType: new VehicleType(x.TypeVehicleID.Value),
+                    note: new Note(x.Note),
+                    code: new Code(x.Code),
+                    volume: new Volume(x.Volume)
+                    );
+
+                vehicles.Add(vehicle);
+            });
+            var result = _vehicleRepository.ImportExcel(vehicles);
+            return Task.FromResult(result as object);
         }
     }
 }

@@ -9,7 +9,8 @@ namespace TransitionApp.Service.Interface
     public interface IVehicleTypeService
     {
         IEnumerable<VehicleTypeReadModel> GetAll();
-        Task<VehicleTypeReadModel> Get(int id);
+        VehicleTypeReadModel Get(int id);
         IEnumerable<VehicleTypeReadModel> GetByIds(List<int> ids);
+        VehicleTypeReadModel GetByCode(string codeDriver);
     }
 }

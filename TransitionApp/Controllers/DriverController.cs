@@ -20,14 +20,14 @@ namespace TransitionApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery]SearchDriverRequest request)
+        public async Task<IActionResult> GetAll([FromQuery]SearchDriverRequest request, [FromQuery(Name = "VehicleTypeIDs[]")] List<int> vehicleTypeIDs)
         {
             if(request.Page == 0)
             {
                 request.Page = 1;
                 request.PageSize = 10;
             }
-            var result = await _driverAppService.GetAll(request);
+            var result = await _driverAppService.GetAll(request, vehicleTypeIDs);
             return Ok(result);
 
         }
@@ -45,6 +45,29 @@ namespace TransitionApp.Controllers
         public async Task<IActionResult> Post([FromBody]CreateDriverRequest request)
         {
             var result = await _driverAppService.Create(request);
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody]CreateDriverRequest request)
+        {
+            var result = await _driverAppService.Update(id, request);
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("UploadFile")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            var result = await _driverAppService.ImportExcel(file);
+            return Ok(result);
+        }
+
+        // DELETE api/values/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _driverAppService.Delete(id);
             return Ok(result);
         }
     }

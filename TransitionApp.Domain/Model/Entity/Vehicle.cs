@@ -28,7 +28,8 @@ namespace TransitionApp.Domain.Model.Entity
             Name name,
             VehicleType vehicleType,
             Note note,
-            Code code
+            Code code,
+            Volume volume
             )
         {
             Id = id;
@@ -39,6 +40,7 @@ namespace TransitionApp.Domain.Model.Entity
             Name = name;
             VehicleType = vehicleType;
             Note = note;
+            Volume = volume;
         }
     }
     public enum TypeVehicle : int

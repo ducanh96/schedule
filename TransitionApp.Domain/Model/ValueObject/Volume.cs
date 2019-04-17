@@ -6,8 +6,8 @@ namespace TransitionApp.Domain.Model.ValueObject
 {
     public class Volume : IEquatable<Volume>
     {
-        public double Size { get; }
-        public Volume(double size)
+        public string Size { get; }
+        public Volume(string size)
         {
             this.Size = size;
         }
@@ -19,12 +19,12 @@ namespace TransitionApp.Domain.Model.ValueObject
         #endregion
 
         #region Conversion
-        public static implicit operator double(Volume value)
+        public static implicit operator string(Volume value)
         {
             return value.Size;
         }
 
-        public static implicit operator Volume(double value)
+        public static implicit operator Volume(string value)
         {
             return new Volume(value);
         }

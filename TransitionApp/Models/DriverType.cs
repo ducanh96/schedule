@@ -13,7 +13,7 @@ namespace TransitionApp.Models
     {
         public DriverType()
         {
-            Field(x => x.Id);
+            Field(x => x.ID);
            
             
         }

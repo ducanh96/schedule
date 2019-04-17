@@ -13,6 +13,8 @@ namespace TransitionApp.Application.RequestModel.Vehicle
         public int TypeID { get; set; }
         public string Note { get; set; }
         public string LicensePlate { get; set; }
+        public List<int> MaxVolume { get; set; }
+        public int ID { get; set; }
 
     }
 }

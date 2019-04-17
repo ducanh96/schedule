@@ -21,7 +21,7 @@ namespace TransitionApp.Domain.Model.ValueObject
             Country = country;
             District = district;
             Street = street;
-            StreetNumber = StreetNumber;
+            StreetNumber = streetNumber;
         }
     }
 }

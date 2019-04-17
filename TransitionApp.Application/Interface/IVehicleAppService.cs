@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TransitionApp.Application.RequestModel;
 using TransitionApp.Application.RequestModel.Vehicle;
@@ -24,8 +25,10 @@ namespace TransitionApp.Application.Interface
         //BaseResponse Create(CreateVehicleRequest vehicleRequest);
         Task<StatusResponse> Create(CreateVehicleRequests vehicleRequest);
 
-        BaseResponse Edit(CreateVehicleRequest vehicleEditRequest);
-        BaseResponse Delete(DeleteVehicleRequest vehicleRequest);
+        Task<StatusResponse> Edit(CreateVehicleRequests vehicleEditRequest);
+        Task<StatusResponse> Delete(DeleteVehicleRequest vehicleRequest);
+        Task<StatusResponse> ImportExcel(IFormFile file);
+
         #endregion
 
     }

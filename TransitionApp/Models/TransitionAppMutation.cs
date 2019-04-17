@@ -39,50 +39,50 @@ namespace TransitionApp.Models
             //    }
             //    );
 
-            Field<BaseResponseType>(
-               "editVehicle",
-               arguments: new QueryArguments(
-                   new QueryArgument<EditVehicleInputType>
-                   {
-                       Name = "itemEdit"
-                   }
-                   ),
-               resolve: x =>
-               {
-                   var licensePlate = x.GetArgument<CreateVehicleRequest>("itemEdit");
-                   var vehicleRequest = new CreateVehicleRequest
-                   {
-                       Id = licensePlate.Id,
-                       LicensePlate = licensePlate.LicensePlate,
-                       Capacity = licensePlate.Capacity,
-                       Volume = licensePlate.Volume
+            //Field<BaseResponseType>(
+            //   "editVehicle",
+            //   arguments: new QueryArguments(
+            //       new QueryArgument<EditVehicleInputType>
+            //       {
+            //           Name = "itemEdit"
+            //       }
+            //       ),
+            //   resolve: x =>
+            //   {
+            //       var licensePlate = x.GetArgument<CreateVehicleRequest>("itemEdit");
+            //       var vehicleRequest = new CreateVehicleRequest
+            //       {
+            //           Id = licensePlate.Id,
+            //           LicensePlate = licensePlate.LicensePlate,
+            //           Capacity = licensePlate.Capacity,
+            //           Volume = licensePlate.Volume
 
-                   };
-                   return vehicleAppService.Edit(vehicleRequest);
-               }
-               );
-            Field<BaseResponseType>(
-              "deleteVehicle",
-              arguments: new QueryArguments(
-                  new QueryArgument<EditVehicleInputType>
-                  {
-                      Name = "item"
-                  }
-                  ),
-              resolve: x =>
-              {
-                  var licensePlate = x.GetArgument<CreateVehicleRequest>("item");
-                  var vehicleRequest = new CreateVehicleRequest
-                  {
-                      Id = licensePlate.Id,
-                      LicensePlate = licensePlate.LicensePlate,
-                      Capacity = licensePlate.Capacity,
-                      Volume = licensePlate.Volume
+            //       };
+            //       return vehicleAppService.Edit(vehicleRequest);
+            //   }
+            //   );
+            //Field<BaseResponseType>(
+            //  "deleteVehicle",
+            //  arguments: new QueryArguments(
+            //      new QueryArgument<EditVehicleInputType>
+            //      {
+            //          Name = "item"
+            //      }
+            //      ),
+            //  resolve: x =>
+            //  {
+            //      var licensePlate = x.GetArgument<CreateVehicleRequest>("item");
+            //      var vehicleRequest = new CreateVehicleRequest
+            //      {
+            //          Id = licensePlate.Id,
+            //          LicensePlate = licensePlate.LicensePlate,
+            //          Capacity = licensePlate.Capacity,
+            //          Volume = licensePlate.Volume
 
-                  };
-                  return vehicleAppService.Edit(vehicleRequest);
-              }
-              );
+            //      };
+            //      return vehicleAppService.Edit(vehicleRequest);
+            //  }
+            //  );
             //Field<BaseResponseType>(
             //    "deleteVehicle",
             //    arguments: new QueryArguments(
