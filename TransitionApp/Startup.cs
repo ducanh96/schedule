@@ -1,6 +1,7 @@
 ﻿using GraphiQl;
 using GraphQL;
 using GraphQL.Types;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,15 +10,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json.Serialization;
+using OrderService.Domain.Commands.Invoices;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
 using System.IO;
 using TransitionApp.Application.Implement;
 using TransitionApp.Application.Interface;
 using TransitionApp.Domain.Bus;
 using TransitionApp.Domain.CommandHanders;
 using TransitionApp.Domain.Commands.Driver;
+using TransitionApp.Domain.Commands.Schedule;
 using TransitionApp.Domain.Commands.Vehicle;
 using TransitionApp.Domain.Commands.VehicleType;
+using TransitionApp.Domain.Consumer.Invoice;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Notifications;
 using TransitionApp.Infrastructor.Implement.Repository;
@@ -27,6 +32,7 @@ using TransitionApp.Models.Vehicle.InputType;
 using TransitionApp.Models.Vehicle.ObjectType;
 using TransitionApp.Service.Implement;
 using TransitionApp.Service.Interface;
+using SimpleInjector;
 
 namespace TransitionApp
 {
@@ -45,6 +51,7 @@ namespace TransitionApp
         {
             services.AddMediatR(typeof(Startup));
             services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
 
             // Domain Bus (Mediator)
             services.AddScoped<IMediatorHandler, Infrastructor.Bus.InMemoryBus>();
@@ -83,6 +90,7 @@ namespace TransitionApp
             services.AddTransient<IScheduleAppService, ScheduleAppService>();
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
             services.AddTransient<IScheduleService, ScheduleService>();
+            services.AddScoped<IRequestHandler<CreateScheduleCommand, object>, ScheduleCommandHandler>();
 
             #region Add event
 
@@ -91,39 +99,101 @@ namespace TransitionApp
             #endregion
 
 
+            #region Masstransit
 
-            ////add masstran
-            //var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+            Container container = new Container();
+            container.Register<IInvoiceRepository, InvoiceRepository>(Lifestyle.Singleton);
+            container.RegisterInstance(Configuration);
+            //add masstran
+
+            var ipValue = "192.168.1.48";
+            var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
+                {
+                    var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
+                    {
+                        settings.Username("tuandv");
+                        settings.Password("tuandv");
+
+                    });
+                    cfg.ReceiveEndpoint(host, "AbcHandler", e =>
+                    {
+
+                        //e.Consumer<VehicleConsume>();
+                        //e.Handler<VehicleReadModel>(context =>
+                        //{
+                        //    return Console.Out.WriteLineAsync($"Received: {context.Message.LicensePlate}");
+                        //});
+                        //e.Consumer<VehicleConsume>();
+                        e.Consumer<AbcConsumer>();
+
+                    });
+
+                    cfg.ReceiveEndpoint(host, "Invoice", e =>
+                    {
+
+                        //e.Consumer<VehicleConsume>();
+                        //e.Handler<AddNewInvoiceCommand>(context =>
+                        //{
+                        //    return Console.Out.WriteLineAsync($"Received: {context.Message.CustomerID}, {context.Message.Address.City}");
+                        //});
+                        //e.Consumer<VehicleConsume>();
+                        e.Consumer<InvoiceConsumer>(container);
+
+
+                    });
+
+                });
+
+
+            //services.AddScoped<InvoiceConsumer>();
+            //services.AddMassTransit(x =>
+            //{
+            //    x.AddConsumer<InvoiceConsumer>();
+            //});
+
+            //IBusControl busControl = null;
+
+            //services.AddSingleton(provider =>
+            //{
+            //    var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
             //    {
-            //        var host = cfg.Host(new Uri("rabbitmq://localhost/"), settings =>
+            //        var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
             //        {
-            //            settings.Username("guest");
-            //            settings.Password("guest");
-
+            //            settings.Username("tuandv");
+            //            settings.Password("tuandv");
             //        });
-            //        cfg.ReceiveEndpoint(host, "AbcHandler", e =>
+
+            //        cfg.ReceiveEndpoint(host, "Invoice", e =>
             //        {
-
-            //            //e.Consumer<VehicleConsume>();
-            //            e.Handler<VehicleReadModel>(context =>
-            //            {
-            //                return Console.Out.WriteLineAsync($"Received: {context.Message.LicensePlate}");
-            //            });
-            //            //e.Consumer<VehicleConsume>();
-            //             e.Consumer<AbcConsumer>();
-
+            //            e.Consumer<InvoiceConsumer>(provider);
             //        });
             //    });
+            //    busControl = bus;
+            //    return bus;
+
+            //}
 
 
-            //services.AddSingleton<IPublishEndpoint>(bus);
-            //services.AddSingleton<ISendEndpointProvider>(bus);
-            //services.AddSingleton<IBus>(bus);
+            //);
 
-            //bus.Start();
+
+
+            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
+            //services.AddScoped(x => x.GetRequiredService<IBus>().CreateRequestClient<AddNewInvoiceCommand>());
+
+
+            services.AddSingleton<IPublishEndpoint>(bus);
+            services.AddSingleton<ISendEndpointProvider>(bus);
+            services.AddSingleton<IBus>(bus);
+
+            bus.Start();
+
 
             //services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
 
+            #endregion
 
             // add graphQl
             services.AddSingleton<TransitionAppQuery>();

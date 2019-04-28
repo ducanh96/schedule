@@ -1,0 +1,15 @@
+﻿{
+  "name": "EchoBot",
+  "services": [
+    {
+      "type": "endpoint",
+      "name": "development",
+      "endpoint": "http://localhost:3978/api/messages",
+      "appId": "9521d000-6fad-4fca-a8cb-ac74c80df54c",
+      "appPassword": "eqmTPZ43=xoutSZDT871$+|",
+      "id": "1"
+    }
+  ],
+  "padlock": "",
+  "version": "2.0"
+}

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using TransitionApp.Application.Interface;
 using TransitionApp.Application.RequestModel;
+using TransitionApp.Models.Vehicle;
 
 namespace TransitionApp.Controllers
 {
@@ -13,15 +15,20 @@ namespace TransitionApp.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly IVehicleAppService _vehicleAppService;
-        public ValuesController(IVehicleAppService vehicleAppService)
+        private readonly IBus _bus;
+        public ValuesController(IVehicleAppService vehicleAppService, IBus bus)
         {
             _vehicleAppService = vehicleAppService;
+            _bus = bus;
         }
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-
+            _bus.Publish<Abc>(new Abc
+            {
+                Name = "Duc anh"
+            });
             return new string[] { "value1", "value2" };
             
         }

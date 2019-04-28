@@ -22,7 +22,7 @@ namespace TransitionApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]CreateScheduleRequest request)
         {
-           
+            var result = await _scheduleAppService.Create(request);
             return Ok(true);
         }
 

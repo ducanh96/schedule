@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using TransitionApp.Application.Interface;
 using TransitionApp.Application.RequestModel.Schedule;
+using TransitionApp.Application.ResponseModel;
 using TransitionApp.Application.ResponseModel.Schedule;
+using TransitionApp.Domain.Bus;
+using TransitionApp.Domain.Commands.Schedule;
 using TransitionApp.Domain.ReadModel.Schedule;
 using TransitionApp.Domain.ReadModel.Schedule.DAO;
 using TransitionApp.Service.Interface;
@@ -15,11 +18,98 @@ namespace TransitionApp.Application.Implement
     {
         private readonly IScheduleService _scheduleService;
         private readonly IDriverService _driverService;
-        public ScheduleAppService(IScheduleService scheduleService, IDriverService driverService)
+        private readonly IMediatorHandler _bus;
+        public ScheduleAppService(IScheduleService scheduleService, IDriverService driverService, IMediatorHandler bus)
         {
             _scheduleService = scheduleService;
             _driverService = driverService;
+            _bus = bus;
         }
+
+        public Task<BaseResponse> Create(CreateScheduleRequest request)
+        {
+            var response = new BaseResponse();
+            try
+            {
+                #region Tao dữ liệu routes
+                
+                List<ScheduleCommand.Route> lstRoute = new List<ScheduleCommand.Route>();
+                foreach (var route in request.Routes)
+                {
+                    // lay du lieu customer ung voi 1 route
+                    List<ScheduleCommand.CustomerInfo> customerInfos = new List<ScheduleCommand.CustomerInfo>();
+                    route.Customers.ForEach(x =>
+                    {
+                        ScheduleCommand.CustomerInfo customerInfo = new ScheduleCommand.CustomerInfo()
+                        {
+                            CustomerID = x.CustomerID,
+                            Invoices = string.Join(',', x.Invoices),
+                            Lat = x.Address.Lat.Value.ToString(),
+                            Lng = x.Address.Lng.Value.ToString(),
+                            Status = x.Status,
+                            Weight = x.Weight
+
+
+                        };
+                        customerInfos.Add(customerInfo);
+                    });
+
+                    ScheduleCommand.Route routeData = new ScheduleCommand.Route()
+                    {
+                       
+                        EstimatedDistance = route.EstimatedDistance,
+                        EstimatedDuration = route.EstimatedDuration,
+                        DepotLat = route.Depot.Lat.Value.ToString(),
+                        DepotAddress = route.Depot.Address,
+                        DepotLng = route.Depot.Lng.Value.ToString(),
+                        DriverID = route.DriverID,
+                        WarehouseId = route.Depot.WarehouseId,
+                        Weight = route.Weight.Value,
+                        Status = route.Status.Value,
+                        CustomerInfos = customerInfos
+
+                    };
+
+                    lstRoute.Add(routeData);
+                }
+                #endregion
+
+                CreateScheduleCommand createCommand = new CreateScheduleCommand()
+                {
+                    EstimatedDistance = request.EstimatedDistance,
+                    EstimatedDuration = request.EstimatedDuration,
+                    Name = request.Name,
+                    Note = request.Note,
+                    NumberOfCustomers = request.NumberOfCustomers,
+                    Weight = request.Weight,
+                    Status = request.Status,
+                    RouteManagerType = request.RouteManagerType,
+                    DeliveredAt = DateTime.ParseExact(request.Name,"dd-MM-yyyy",null),
+                    Routes = lstRoute
+                };
+                var result = _bus.SendCommand(createCommand);
+
+                return Task.FromResult(new BaseResponse
+                {
+                   
+
+                });
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw;
+            }
+            return Task.FromResult(response);
+            
+        }
+        /// <summary>
+        /// lấy lịch cụ thể
+        /// </summary>
+        /// <param name="id">mã lịch</param>
+        /// <returns></returns>
 
         public Task<SearchScheduleResponse> Get(int id)
         {
@@ -58,7 +148,9 @@ namespace TransitionApp.Application.Implement
                                       {
                                           ID = driverInfo.ID,
                                           driverInfo.Name,
-                                          driverInfo.PhoneNumber
+                                          driverInfo.PhoneNumber,
+                                          Code = driverInfo.Code
+                                          
                                       },
                                       EstimatedDistance = a.EstimatedDistance,
                                       EstimatedDuration = a.EstimatedDuration,

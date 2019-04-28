@@ -35,5 +35,10 @@ namespace TransitionApp.Service.Implement
         {
             return _invoiceRepository.GetItems(invoiceId);
         }
+
+        public CustomerReadModel GetCustomer(string customerCode)
+        {
+            return _invoiceRepository.GetCustomer(customerCode);
+        }
     }
 }

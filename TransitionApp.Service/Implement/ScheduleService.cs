@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel.Customer;
+using TransitionApp.Domain.ReadModel.Invoice;
 using TransitionApp.Domain.ReadModel.Schedule;
 using TransitionApp.Domain.ReadModel.Schedule.DAO;
 using TransitionApp.Service.Interface;
@@ -30,6 +31,11 @@ namespace TransitionApp.Service.Implement
             return _scheduleRepository.GetInforCustomerOfRoute(customerId);
         }
 
+        public AddressReadModel GetInformationCustomerOfRoute(int routeInfoId)
+        {
+            return _scheduleRepository.GetInformationCustomerOfRoute(routeInfoId);
+        }
+
         public IEnumerable<RouteReadModel> GetRouteBySchedule(int scheduleId)
         {
             return _scheduleRepository.GetRouteBySchedule(scheduleId);
@@ -39,6 +45,7 @@ namespace TransitionApp.Service.Implement
         {
             return _scheduleRepository.GetRouteInfo(routeId);
         }
+
 
         /// <summary>
         /// lay danh sach Customer
@@ -51,6 +58,7 @@ namespace TransitionApp.Service.Implement
             foreach (var item in routeInfoReadModels)
             {
                 var customer = GetInforCustomerOfRoute(item.CustomerId);
+                var locationCustomer = GetInformationCustomerOfRoute(item.ID);
                 var temp = new CustomerRouteReadModel
                 {
                     Address = new
@@ -83,5 +91,7 @@ namespace TransitionApp.Service.Implement
             }
             return customerRoutes;
         }
+
+       
     }
 }

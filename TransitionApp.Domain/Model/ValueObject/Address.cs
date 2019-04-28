@@ -11,6 +11,9 @@ namespace TransitionApp.Domain.Model.ValueObject
         public string District { get; }
         public string Street { get; }
         public string StreetNumber { get; }
+        public string Lat { get;  }
+        public string Lng { get; }
+        public string FullAddress { get; }
         public Address(string city
             , string country
             , string district
@@ -23,5 +26,18 @@ namespace TransitionApp.Domain.Model.ValueObject
             Street = street;
             StreetNumber = streetNumber;
         }
+
+        public Address(string lat, string lng)
+        {
+            Lat = lat;
+            Lng = lng;
+        }
+
+        public Address(string lat, string lng, string fullAddress) : this(lat, lng)
+        {
+            FullAddress = fullAddress;
+        }
+
+       
     }
 }

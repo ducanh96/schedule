@@ -13,9 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransitionApp.Application",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransitionApp.Infrastructor", "TransitionApp.Infrastructor\TransitionApp.Infrastructor.csproj", "{15DB53DC-6402-4348-94B7-61134D1BFB87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Consumer\Consumer.csproj", "{2FAD7627-55B6-4773-8244-BB0C86A07896}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Consumer", "Consumer\Consumer.csproj", "{2FAD7627-55B6-4773-8244-BB0C86A07896}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubcriberRabit", "SubcriberRabit\SubcriberRabit.csproj", "{6ACB5F20-8B9D-4988-A22E-DA917B8EB646}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubcriberRabit", "SubcriberRabit\SubcriberRabit.csproj", "{6ACB5F20-8B9D-4988-A22E-DA917B8EB646}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoBot", "MyBot\EchoBot\EchoBot.csproj", "{4034E453-4D33-45A2-BEA8-57DBB9D0C06A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoChatBot", "DemoChatBot\DemoChatBot.csproj", "{F45801CA-9F9A-4A52-BA37-00F7E876B9AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{6ACB5F20-8B9D-4988-A22E-DA917B8EB646}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6ACB5F20-8B9D-4988-A22E-DA917B8EB646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6ACB5F20-8B9D-4988-A22E-DA917B8EB646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4034E453-4D33-45A2-BEA8-57DBB9D0C06A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4034E453-4D33-45A2-BEA8-57DBB9D0C06A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4034E453-4D33-45A2-BEA8-57DBB9D0C06A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4034E453-4D33-45A2-BEA8-57DBB9D0C06A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F45801CA-9F9A-4A52-BA37-00F7E876B9AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F45801CA-9F9A-4A52-BA37-00F7E876B9AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F45801CA-9F9A-4A52-BA37-00F7E876B9AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F45801CA-9F9A-4A52-BA37-00F7E876B9AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

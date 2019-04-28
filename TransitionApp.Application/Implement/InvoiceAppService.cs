@@ -1,9 +1,12 @@
-﻿using System;
+﻿using MassTransit;
+using OrderService.Domain.Commands.Invoices;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TransitionApp.Application.Interface;
 using TransitionApp.Application.RequestModel.Invoice;
 using TransitionApp.Application.ResponseModel.Invoice;
+using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Service.Interface;
 
 namespace TransitionApp.Application.Implement
@@ -16,6 +19,9 @@ namespace TransitionApp.Application.Implement
         {
             _invoiceService = invoiceService;
         }
+
+     
+
         public Task<SearchInvoiceResponse> GetAll(FilterInvoiceRequest request)
         {
             var result = new SearchInvoiceResponse();

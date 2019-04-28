@@ -10,6 +10,7 @@ namespace TransitionApp.Service.Interface
     {
         SearchInvoiceReadModel GetAll(int page, int pageSize, DateTime? FromDate);
         CustomerReadModel GetCustomer(int customerId);
+        CustomerReadModel GetCustomer(string customerCode);
         AddressReadModel GetAddress(int addressId);
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
     }
