@@ -1,0 +1,18 @@
+﻿{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "horizontalAlignment": "Center",
+      "text": "New TextBlock"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Action.Submit"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.0"
+}

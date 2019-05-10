@@ -13,5 +13,6 @@ namespace TransitionApp.Service.Interface
         CustomerReadModel GetCustomer(string customerCode);
         AddressReadModel GetAddress(int addressId);
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
+
     }
 }

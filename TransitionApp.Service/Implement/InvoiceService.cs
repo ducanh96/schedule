@@ -40,5 +40,7 @@ namespace TransitionApp.Service.Implement
         {
             return _invoiceRepository.GetCustomer(customerCode);
         }
+
+        
     }
 }

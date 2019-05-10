@@ -92,6 +92,11 @@ namespace TransitionApp
             services.AddTransient<IScheduleService, ScheduleService>();
             services.AddScoped<IRequestHandler<CreateScheduleCommand, object>, ScheduleCommandHandler>();
 
+
+            // DI Account
+            services.AddTransient<IAccountService, AccountService>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+
             #region Add event
 
             //services.AddScoped<INotificationHandler<VehicleCreateEvent>, VehicleCreateEvent>();
@@ -106,7 +111,7 @@ namespace TransitionApp
             container.RegisterInstance(Configuration);
             //add masstran
 
-            var ipValue = "192.168.1.48";
+            var ipValue = "localhost";
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
@@ -143,46 +148,6 @@ namespace TransitionApp
                     });
 
                 });
-
-
-            //services.AddScoped<InvoiceConsumer>();
-            //services.AddMassTransit(x =>
-            //{
-            //    x.AddConsumer<InvoiceConsumer>();
-            //});
-
-            //IBusControl busControl = null;
-
-            //services.AddSingleton(provider =>
-            //{
-            //    var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
-            //    {
-            //        var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
-            //        {
-            //            settings.Username("tuandv");
-            //            settings.Password("tuandv");
-            //        });
-
-            //        cfg.ReceiveEndpoint(host, "Invoice", e =>
-            //        {
-            //            e.Consumer<InvoiceConsumer>(provider);
-            //        });
-            //    });
-            //    busControl = bus;
-            //    return bus;
-
-            //}
-
-
-            //);
-
-
-
-            //services.AddSingleton<IPublishEndpoint>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddSingleton<ISendEndpointProvider>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
-            //services.AddScoped(x => x.GetRequiredService<IBus>().CreateRequestClient<AddNewInvoiceCommand>());
-
 
             services.AddSingleton<IPublishEndpoint>(bus);
             services.AddSingleton<ISendEndpointProvider>(bus);

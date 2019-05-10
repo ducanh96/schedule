@@ -27,7 +27,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             {
                 string sQuery = "SELECT ID, LicensePlate FROM Vehicle";
                 conn.Open();
-                var result = await conn.QueryFirstAsync<VehicleReadModel>(sQuery);
+                var result = await conn.QueryFirstOrDefaultAsync<VehicleReadModel>(sQuery);
                 conn.Close();
                 return result;
             }
@@ -112,7 +112,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 }))
                 {
                     var vehicle = multi.Read<VehicleReadModel>();
-                    var invoiceItems = multi.ReadFirst<PagingReadModel>();
+                    var invoiceItems = multi.ReadFirstOrDefault<PagingReadModel>();
 
                     SearchVehicleReadModel searchVehicle = new SearchVehicleReadModel
                     {
@@ -135,7 +135,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     " THEN 1 " +
                     " ELSE 0" +
                     " END ";
-                var result = conn.QueryFirst<bool>(sQuery, new
+                var result = conn.QueryFirstOrDefault<bool>(sQuery, new
                 {
                     Id = id
                 }
@@ -175,7 +175,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     "         @Note " +
                     "        ); " +
                     "SELECT Id from Vehicle where Id = CAST(SCOPE_IDENTITY() as int)";
-                var result = conn.QueryFirst<VehicleModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<VehicleModel>(sQuery, new
                 {
                     LicensePlate = vehicle.LicensePlate.Number,
                     Code = vehicle.Code.Value,
@@ -223,7 +223,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                 Volume = @Volume
                        Where Id = @Id;
                     SELECT @Id;";
-                var result = conn.QueryFirst<VehicleModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<VehicleModel>(sQuery, new
                 {
                     LicensePlate = vehicle.LicensePlate.Number,
                     Code = vehicle.Code.Value,

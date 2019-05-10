@@ -146,7 +146,10 @@ namespace EchoBot
 
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddTransient<IDriverService, DriverService>();
-
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddTransient<IAccountService, AccountService>();
+            services.AddTransient<IScheduleService, ScheduleService>();
+            services.AddTransient<IScheduleRepository, ScheduleRepository>();
             #region Prompt for dialog
 
             //// Create and register state accesssors.

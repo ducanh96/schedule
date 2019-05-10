@@ -15,6 +15,7 @@ namespace EchoBot.WelcomeUser
     public class WelcomeUserBot : IBot
     {
         private readonly IDriverService _driverService;
+        private readonly IAccountService _accountService;
         // Messages sent to the user.
         private const string WelcomeMessage = @"This is a simple Welcome Bot sample.This bot will introduce you
                                         to welcoming and greeting users. You can say 'intro' to see the
@@ -36,9 +37,10 @@ namespace EchoBot.WelcomeUser
         private readonly WelcomeUserStateAccessors _welcomeUserStateAccessors;
 
         // Initializes a new instance of the <see cref="WelcomeUserBot"/> class.
-        public WelcomeUserBot(WelcomeUserStateAccessors statePropertyAccessor, IDriverService driverService)
+        public WelcomeUserBot(WelcomeUserStateAccessors statePropertyAccessor, IDriverService driverService, IAccountService accountService)
         {
             _driverService = driverService;
+            _accountService = accountService;
             _welcomeUserStateAccessors = statePropertyAccessor ?? throw new System.ArgumentNullException("state accessor can't be null");
         }
 

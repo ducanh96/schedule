@@ -21,7 +21,20 @@
         NONE,
         TRANSITION,
         USERNAME,
-        PASSWORD
+        PASSWORD,
+        INVOICE_CHOOSE,
+        INVOICE_NOW, // MAP ĐẾN PHẦN 
+        INVOICE_PAST,
+
+        // phan click detail Customer
+        #region funtional for Invoice_now
+
+        CHOOSE_FUNCTIONAL_CUSTOMER,
+        CALL,
+        ITEMS,
+        MAPS
+
+        #endregion
     }
 
 }

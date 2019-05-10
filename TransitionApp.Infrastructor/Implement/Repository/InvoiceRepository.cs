@@ -49,7 +49,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 }))
                 {
                     var invoices = multi.Read<InvoiceReadModel>();
-                    var pageData = multi.ReadFirst<PagingReadModel>();
+                    var pageData = multi.ReadFirstOrDefault<PagingReadModel>();
                     SearchInvoiceReadModel searchVehicle = new SearchInvoiceReadModel
                     {
                         Invoices = invoices,

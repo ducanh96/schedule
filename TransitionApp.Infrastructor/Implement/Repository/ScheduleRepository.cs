@@ -57,7 +57,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 }))
                 {
                     var schedules = multi.Read<ScheduleReadModel>();
-                    var pageData = multi.ReadFirst<PagingReadModel>();
+                    var pageData = multi.ReadFirstOrDefault<PagingReadModel>();
                     SearchScheduleReadModel searchSchedule = new SearchScheduleReadModel
                     {
                         Schedules = schedules,
@@ -79,7 +79,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                             , [RouteManagerType], [Status], [Weight], [CreatedAt]
                     From dbo.Schedule
                     WHERE Id = @Id;";
-                var result = conn.QueryFirst<ScheduleReadModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<ScheduleReadModel>(sQuery, new
                 {
                     Id = id
                 });
@@ -132,7 +132,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                        Declare @AddressId int;
                      Select @AddressId = AddressId From dbo.Customer 
                              WHERE Id = @CustomerId;
-                     Select [Id], [Code], [Name], [AddressId]
+                     Select [Id], [Code], [Name], [AddressId], [PhoneNumber]
                              From dbo.Customer 
                              WHERE Id = @CustomerId;
             
@@ -164,7 +164,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                       Select [Lat], [Lng]
                             From dbo.RouteInfo
                       Where Id = @Id;";
-                var result = conn.QueryFirst<AddressReadModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<AddressReadModel>(sQuery, new
                 {
                     Id = routerInfoId
                 });
@@ -207,7 +207,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                        );
                         SELECT Id from Schedule where Id = CAST(SCOPE_IDENTITY() as int)";
 
-                    var resultSchedule = conn.QueryFirst<ScheduleModel>(sQuery, new
+                    var resultSchedule = conn.QueryFirstOrDefault<ScheduleModel>(sQuery, new
                     {
                         EstimatedDistance = schedule.EstimatedDistance.Value,
                         EstimatedDuration = schedule.EstimatedDuration.Value,
@@ -248,7 +248,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                        );
                      SELECT Id from Route where Id = CAST(SCOPE_IDENTITY() as int)";
 
-                        var resultRoute = conn.QueryFirst<RouteModel>(queryRoute, new
+                        var resultRoute = conn.QueryFirstOrDefault<RouteModel>(queryRoute, new
                         {
                             ScheduleId = resultSchedule.Id,
                             DriverID = route.DriverID.Value,

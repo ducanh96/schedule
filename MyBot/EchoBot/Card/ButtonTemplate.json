@@ -1,0 +1,22 @@
+﻿{
+  "notification_type": "REGULAR",
+  "attachment": {
+    "type": "template",
+    "payload": {
+      "template_type": "button",
+      "text": "Chọn chức năng?",
+      "buttons": [
+        {
+          "type": "postback",
+          "title": "Đơn hàng hôm nay",
+          "payload": "INVOICE_NOW"
+        },
+        {
+          "type": "postback",
+          "title": "Đơn hàng khác",
+          "payload": "INVOICE_PAST"
+        }
+      ]
+    }
+  }
+}

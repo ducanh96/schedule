@@ -1,4 +1,8 @@
-﻿using TransitionApp.Domain.Interface.Repository;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using TransitionApp.Domain.Interface.Repository;
+using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Driver;
 using TransitionApp.Domain.ReadModel.Driver.DAO;
 using TransitionApp.Service.Interface;
@@ -26,9 +30,20 @@ namespace TransitionApp.Service.Implement
             return _driverRepository.GetAll(page, pageSize, driverModel);
         }
 
+        public DriverReadModel GetByAccount(int userId)
+        {
+            return _driverRepository.GetByAccount(userId);
+        }
+
         public DriverReadModel GetByCode(string code)
         {
             return _driverRepository.GetByCode(code);
+        }
+
+        public IEnumerable<CustomerReadModel> GetCustomers(DateTime date, int driverId)
+        {
+            return _driverRepository.GetCustomers(date, driverId);
+
         }
     }
 }

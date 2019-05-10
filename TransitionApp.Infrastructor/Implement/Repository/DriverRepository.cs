@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Model.Entity;
 using TransitionApp.Domain.ReadModel;
+using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Driver;
 using TransitionApp.Domain.ReadModel.Driver.DAO;
 
@@ -58,7 +59,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                     , @StreetNumber); 
                            SELECT Id from Driver where Id = CAST(SCOPE_IDENTITY() as int)";
 
-                var result = conn.QueryFirst<DriverModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<DriverModel>(sQuery, new
                 {
                     Name = driver.Name.Full,
                     Code = driver.Code.Value,
@@ -144,7 +145,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                             [City], [Country], [District], [Street], [StreetNumber],
                             [DoB], [IDCardNumber], [Note], [Sex], [StartDate], [VehicleTypeIDs] 
                     FROM Driver WHERE Id = @Id;";
-                var result = conn.QueryFirst<DriverReadModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<DriverReadModel>(sQuery, new
                 {
                     Id = id
                 });
@@ -160,7 +161,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                             [City], [Country], [District], [Street], [StreetNumber],
                             [DoB], [IDCardNumber], [Note], [Sex], [StartDate], [VehicleTypeIDs] 
                     FROM Driver WHERE LOWER(Code) = LOWER(Code);";
-                var result = conn.QueryFirst<DriverReadModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<DriverReadModel>(sQuery, new
                 {
                     Code = code
                 });
@@ -192,7 +193,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                            WHERE Id = @Id;
                            SELECT @Id;";
 
-                var result = conn.QueryFirst<DriverModel>(sQuery, new
+                var result = conn.QueryFirstOrDefault<DriverModel>(sQuery, new
                 {
                     Id = driver.Id.Value,
                     Name = driver.Name.Full,
@@ -278,6 +279,46 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Id = id
                 });
                 return result > 0;
+            }
+        }
+
+        public DriverReadModel GetByAccount(int userId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"Select  [Id], [Code], [Name], [PhoneNumber], [Status], [UserID],
+                            [City], [Country], [District], [Street], [StreetNumber],
+                            [DoB], [IDCardNumber], [Note], [Sex], [StartDate], [VehicleTypeIDs] 
+                    FROM Driver WHERE UserID = @UserID;";
+                var result = conn.QueryFirstOrDefault<DriverReadModel>(sQuery, new
+                {
+                    UserID = userId
+                });
+                return result;
+            }
+        }
+
+        public IEnumerable<CustomerReadModel> GetCustomers(DateTime date, int driverId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @" Select Id, Code, Name, AddressId, PhoneNumber
+                                From Customer
+                                WHERE id  IN (
+                                SELECT CustomerId FROM dbo.RouteInfo WHERE RouterId = (
+	
+                                SELECT TOP 1.Id FROM dbo.Route
+                                WHERE DriverID = @DriverId AND ScheduleId = (SELECT Id FROM dbo.Schedule 
+                                    WHERE CAST(DeliveredAt AS DATE) = CAST(@Date AS DATE)
+                                    )
+                                ));";
+
+                var result = conn.Query<CustomerReadModel>(sQuery, new
+                {
+                    DriverId = driverId,
+                    Date = date
+                });
+                return result;
             }
         }
 
