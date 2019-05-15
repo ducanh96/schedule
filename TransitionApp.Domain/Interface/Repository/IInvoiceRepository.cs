@@ -16,6 +16,11 @@ namespace TransitionApp.Domain.Interface.Repository
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
 
         Task Create(Invoice invoice);
+
         CustomerReadModel GetCustomer(string customerCode);
+        IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId);
+        InvoiceReadModel UpdateVoice(int invoiceId, int status);
+
+
     }
 }

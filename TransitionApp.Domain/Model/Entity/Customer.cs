@@ -7,6 +7,14 @@ namespace TransitionApp.Domain.Model.Entity
 {
     public class Customer
     {
+        public Customer(Address addressCustomer, Code code, Name name, PhoneNumber phoneNumeber)
+        {
+            AddressCustomer = addressCustomer;
+            Code = code;
+            Name = name;
+            PhoneNumeber = phoneNumeber;
+        }
+
         public Customer(Identity iD, Address addressCustomer, string invoices, Status status, Weight weight)
         {
             ID = iD;
@@ -16,10 +24,15 @@ namespace TransitionApp.Domain.Model.Entity
             Weight = weight;
         }
 
+       
+
         public Identity ID { get; set; }
         public Address AddressCustomer { get; set; }
         public string Invoices { get; set; }
         public Status Status { get; set; }
         public Weight Weight { get; set; }
+        public Code Code { get; set; }
+        public Name Name { get; set; }
+        public PhoneNumber PhoneNumeber { get; set; }
     }
 }

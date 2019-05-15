@@ -13,6 +13,10 @@ namespace TransitionApp.Service.Interface
         CustomerReadModel GetCustomer(string customerCode);
         AddressReadModel GetAddress(int addressId);
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
+        IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId);
 
+        #region For Bot
+        bool UpdateVoice(int invoiceId, int status);
+        #endregion
     }
 }

@@ -149,6 +149,8 @@ namespace EchoBot
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddTransient<IAccountService, AccountService>();
             services.AddTransient<IScheduleService, ScheduleService>();
+            services.AddTransient<IInvoiceService, InvoiceService>();
+            services.AddTransient<IInvoiceRepository, InvoiceRepository>();
             services.AddTransient<IScheduleRepository, ScheduleRepository>();
             #region Prompt for dialog
 

@@ -33,6 +33,7 @@ using TransitionApp.Models.Vehicle.ObjectType;
 using TransitionApp.Service.Implement;
 using TransitionApp.Service.Interface;
 using SimpleInjector;
+using TransitionApp.Domain.Consumer.Customer;
 
 namespace TransitionApp
 {
@@ -92,6 +93,8 @@ namespace TransitionApp
             services.AddTransient<IScheduleService, ScheduleService>();
             services.AddScoped<IRequestHandler<CreateScheduleCommand, object>, ScheduleCommandHandler>();
 
+            // DI Customer
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
 
             // DI Account
             services.AddTransient<IAccountService, AccountService>();
@@ -108,10 +111,11 @@ namespace TransitionApp
 
             Container container = new Container();
             container.Register<IInvoiceRepository, InvoiceRepository>(Lifestyle.Singleton);
+            container.Register<ICustomerRepository, CustomerRepository>(Lifestyle.Singleton);
             container.RegisterInstance(Configuration);
             //add masstran
 
-            var ipValue = "localhost";
+            var ipValue = "192.168.1.32";
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
@@ -143,9 +147,13 @@ namespace TransitionApp
                         //});
                         //e.Consumer<VehicleConsume>();
                         e.Consumer<InvoiceConsumer>(container);
-
-
                     });
+
+                    cfg.ReceiveEndpoint(host, "Customer", e =>
+                    {
+                        e.Consumer<CustomerConsumer>(container);
+                    });
+
 
                 });
 

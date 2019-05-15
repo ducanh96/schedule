@@ -208,6 +208,50 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             }
         }
 
+        public IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @" Select Id, [Note], [Served], [ServerTime], [Status], [DeliveryTime]
+                                , [TotalPrice], [WeightTotal], [CustomerId], [Code]
+                                FROM Invoice  WHERE id
+                                    IN (
+                                        SELECT Invoices FROM dbo.RouteInfo WHERE CustomerId = @CustomerId And RouterId = (
+                                        SELECT TOP 1.Id FROM dbo.Route
+                                        WHERE DriverID = @DriverId AND ScheduleId = (SELECT Id FROM dbo.Schedule 
+                                            WHERE CAST(DeliveredAt AS DATE) = CAST(@DeliverTime AS DATE)
+                                            )
+                                        ));";
+
+                var result = conn.Query<InvoiceReadModel>(sQuery, new
+                {
+                    DriverId = driverId,
+                    DeliverTime = deliverTime,
+                    CustomerId = customerId
+                });
+                return result;
+            }
+        }
+
+        public InvoiceReadModel UpdateVoice(int invoiceId, int status)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"Update Invoice
+                               SET Status = @Status 
+                               WHERE Id = @Id;
+                SELECT Code, Status, Served FROM INVOICE
+                WHERE Id = @Id;";
+
+                var result = conn.QueryFirst<InvoiceReadModel>(sQuery, new
+                {
+                    Status = status,
+                    Id = invoiceId
+                });
+                return result;
+            }
+        }
+
         public IDbConnection Connection
         {
             get

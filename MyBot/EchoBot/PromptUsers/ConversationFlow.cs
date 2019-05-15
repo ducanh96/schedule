@@ -28,12 +28,11 @@
 
         // phan click detail Customer
         #region funtional for Invoice_now
-
         CHOOSE_FUNCTIONAL_CUSTOMER,
-        CALL,
-        ITEMS,
-        MAPS
 
+        // items -> 
+        CHOOSE_STATUS_INVOICE
+        
         #endregion
     }
 

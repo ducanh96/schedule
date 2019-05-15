@@ -15,5 +15,6 @@ namespace TransitionApp.Domain.ReadModel.Invoice
         public double WeightTotal { get; set; }
         public int CustomerId { get; set; }
         public int Status { get; set; }
+        public string Code { get; set; }
     }
 }

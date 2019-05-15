@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TransitionApp.Domain.ReadModel.Account;
 using TransitionApp.Domain.ReadModel.Customer;
+using TransitionApp.Domain.ReadModel.Invoice;
 using TransitionApp.Service.Interface;
 
 namespace EchoBot.PromptUsers
@@ -23,8 +24,10 @@ namespace EchoBot.PromptUsers
         private readonly IAccountService _accountService;
         private readonly IDriverService _driverService;
         private readonly IScheduleService _scheduleService;
+        private readonly IInvoiceService _invoiceService;
         private readonly CustomPromptBotAccessors _accessors;
         private readonly ILogger _logger;
+
         private Dictionary<StatusButton, string> ValuesDisplay { get; set; } = new Dictionary<StatusButton, string>();
 
         // This array contains the file location of our adaptive cards
@@ -41,7 +44,7 @@ namespace EchoBot.PromptUsers
 
         public CustomPromptBot(CustomPromptBotAccessors accessors, ILoggerFactory loggerFactory,
             IAccountService accountService, IDriverService driverService,
-            IScheduleService scheduleService)
+            IScheduleService scheduleService, IInvoiceService invoiceService)
         {
             if (loggerFactory == null)
             {
@@ -50,6 +53,7 @@ namespace EchoBot.PromptUsers
             _accountService = accountService;
             _scheduleService = scheduleService;
             _driverService = driverService;
+            _invoiceService = invoiceService;
             _logger = loggerFactory.CreateLogger<CustomPromptBot>();
             _logger.LogTrace("EchoBot turn start.");
             _accessors = accessors ?? throw new System.ArgumentNullException(nameof(accessors));
@@ -58,6 +62,11 @@ namespace EchoBot.PromptUsers
             ValuesDisplay.Add(StatusButton.INVOICE_NOW, "INVOICE_NOW");
             ValuesDisplay.Add(StatusButton.INVOICE_PAST, "INVOICE_PAST");
             ValuesDisplay.Add(StatusButton.BACK, "BACK");
+            ValuesDisplay.Add(StatusButton.INVOICES, "INVOICES");
+
+            ValuesDisplay.Add(StatusButton.BACK_HOME, "BACK_HOME");
+
+
 
         }
 
@@ -82,93 +91,11 @@ namespace EchoBot.PromptUsers
         public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default(CancellationToken))
         {
 
-            //if (turnContext.Activity.Type == ActivityTypes.Message)
-            //{
-            //    var reply = turnContext.Activity.CreateReply();
-
-
-
-            //    var adaptiveCardJson = File.ReadAllText(this._cards[1]);
-
-
-            //    await turnContext.SendActivityAsync(reply, cancellationToken);
-
-
-
-            //}
-
             if (turnContext.Activity.Type == ActivityTypes.Message)
             {
-
-
-
-                // adaptive
-                //var cardAttachment = CreateAdaptiveCardAttachment(this._cards[0]);
-
-                //var reply = turnContext.Activity.CreateReply();
-                //reply.Text = $"submit data: {turnContext.Activity.Value}";
-                //reply.Attachments = new List<Attachment>() { cardAttachment };
-
-
-                //List<CardImage> cardImages1 = new List<CardImage>();
-                //cardImages1.Add(new CardImage(url: "https://upload.wikimedia.org/wikipedia/en/a/a6/Bender_Rodriguez.png"));
-
-                //List<CardAction> cardButtons1 = new List<CardAction>();
-                //CardAction plButton1 = new CardAction()
-                //{
-                //    Value = "https://en.wikipedia.org/wiki/Pig_Latin",
-                //    Type = "openUrl",
-                //    Title = "WikiPedia Page"
-                //};
-
-                //cardButtons1.Add(plButton1);
-                //HeroCard plCard1 = new HeroCard()
-                //{
-                //    Title = "I'm a hero card",
-                //    Subtitle = "Pig Latin Wikipedia Page",
-                //    Images = cardImages1,
-                //    Buttons = cardButtons1
-                //};
-                //Attachment plAttachment1 = plCard1.ToAttachment();
-                //reply.Attachments.Add(plAttachment1);
-
-                //// Card #Two
-                //List<CardImage> cardImages2 = new List<CardImage>();
-                //cardImages2.Add(new CardImage(url: "https://upload.wikimedia.org/wikipedia/en/archive/a/a9/20151112035044!Banyan_Tree_(_Shiv_Bajrang_Dham_Kishunpur).jpeg"));
-
-                //List<CardAction> cardButtons2 = new List<CardAction>();
-                //CardAction plButton2 = new CardAction()
-                //{
-                //    Value = "https://en.wikipedia.org/wiki/Pig_Latin",
-                //    Type = "openUrl",
-                //    Title = "WikiPedia Page"
-                //};
-                //cardButtons2.Add(plButton2);
-                //HeroCard plCard2 = new HeroCard()
-                //{
-                //    Title = "I'm a hero card",
-                //    Subtitle = "Pig Latin Wikipedia Page",
-                //    Images = cardImages2,
-                //    Buttons = cardButtons2
-                //};
-
-                //Attachment plAttachment2 = plCard2.ToAttachment();
-                //reply.Attachments.Add(plAttachment2);
-                //reply.AttachmentLayout = "carousel";
-
-                ////////////////////////////////////////////////////////
-
-
-                //reply.AttachmentLayout = "carousel";
-                //await turnContext.SendActivityAsync(reply, cancellationToken);
-
-
-
                 // Get the state properties from the turn context.
                 ConversationFlow flow = await _accessors.ConversationFlowAccessor.GetAsync(turnContext, () => new ConversationFlow());
                 UserProfile profile = await _accessors.UserProfileAccessor.GetAsync(turnContext, () => new UserProfile());
-
-
 
 
                 await FillOutUserProfileAsync(flow, profile, turnContext, cancellationToken);
@@ -220,8 +147,11 @@ namespace EchoBot.PromptUsers
             Console.WriteLine(turnContext.Activity.Text);
             if (!profile.IsStartConverstation)
             {
+
                 profile.IsStartConverstation = true;
                 await SendIntroCardAsync(turnContext, cancellationToken);
+
+               
 
             }
             else
@@ -232,17 +162,37 @@ namespace EchoBot.PromptUsers
                     {
 
                         case DriverQuestions.USERNAME:
-                            if (ValidateUserName(input, out string username, out message))
+
+                            // neu bam vao nut back
+                            if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.BACK_HOME).ToLower()))
                             {
-                                profile.Username = username;
-                                await turnContext.SendActivityAsync($"Bạn vui lòng nhập mật khẩu");
-                                flow.LastDriverQuestion = DriverQuestions.PASSWORD;
+                                profile.IsStartTransition = false;
+                                await SendIntroCardAsync(turnContext, cancellationToken);
 
                             }
                             else
                             {
-                                await turnContext.SendActivityAsync(message ?? "Xin lỗi, tôi không hiểu điều bạn đang nói!!");
+
+                                if (ValidateUserName(input, out string username, out message))
+                                {
+
+                                    profile.Username = username;
+                                    await turnContext.SendActivityAsync($"Bạn vui lòng nhập mật khẩu");
+                                    flow.LastDriverQuestion = DriverQuestions.PASSWORD;
+
+
+                                   
+
+                                }
+                                else
+                                {
+                                    turnContext.Activity.ChannelData = BackHome();
+                                    await turnContext.SendActivityAsync(message ?? "Xin lỗi, tôi không hiểu điều bạn đang nói!!");
+                                    await turnContext.SendActivityAsync(turnContext.Activity);
+                                }
                             }
+
+
                             break;
                         case DriverQuestions.PASSWORD:
                             if (ValidatePassword(input, profile.Username, out string password, out message, out AccountReadModel account))
@@ -260,11 +210,8 @@ namespace EchoBot.PromptUsers
                                 replyPassword.Text = $"Đăng nhập thành công";
 
                                 await turnContext.SendActivityAsync(replyPassword);
-                                string dataMenu = File.ReadAllText(this._cards[3]);
 
-                                Console.WriteLine(dataMenu);
-
-                                replyPassword.ChannelData = JsonConvert.DeserializeObject(dataMenu);
+                                replyPassword.ChannelData = ButtonInvoice();
                                 replyPassword.Text = String.Empty;
                                 await turnContext.SendActivityAsync(replyPassword, cancellationToken);
                                 Console.WriteLine(turnContext.Activity);
@@ -280,8 +227,10 @@ namespace EchoBot.PromptUsers
                             if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.INVOICE_NOW).ToLower()))
                             {
                                 flow.LastDriverQuestion = DriverQuestions.INVOICE_NOW;
-                             
-                                var customerReadModel = _driverService.GetCustomers(new DateTime(2019, 4, 24), profile.Driver.ID);
+
+                                profile.TimeDeliver = new DateTime(2019, 4, 24);
+                                var customerReadModel = _driverService.GetCustomers(profile.TimeDeliver, profile.Driver.ID);
+
 
                                 Console.WriteLine(JsonConvert.SerializeObject(customerReadModel));
                                 Activity activity = turnContext.Activity.CreateReply();
@@ -291,9 +240,17 @@ namespace EchoBot.PromptUsers
 
                                 await turnContext.SendActivityAsync(activity, cancellationToken);
                             }
+                            else if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.INVOICE_PAST).ToLower()))
+                            {
+                                flow.LastDriverQuestion = DriverQuestions.INVOICE_PAST;
+                                await turnContext.SendActivityAsync("Nhập ngày giao (ngày/tháng/năm)");
+                                await turnContext.SendActivityAsync("Ví dụ: 23/3/1996");
+
+                            }
                             break;
+                        //  DANH CHO INVOICE_CHOOSE
                         case DriverQuestions.INVOICE_NOW:
-                            string payLoad = SplitCustomerPayLoad(input.Trim(), Key.CUSTOMER);
+                            string payLoad = SplitCustomerPayLoad(input.Trim(), Key.CUSTOMER, '-');
                             Console.WriteLine(payLoad);
                             if (payLoad.Length > 0)
                             {
@@ -304,30 +261,83 @@ namespace EchoBot.PromptUsers
                                 rep.ChannelData = DetailCustomer(customerDetail);
                                 // chuyen sang lua chon chuc nang
                                 flow.LastDriverQuestion = DriverQuestions.CHOOSE_FUNCTIONAL_CUSTOMER;
-
                                 await turnContext.SendActivityAsync(rep);
 
                             }
                             else
                             {
-
+                               
                             }
                             break;
+
+                        case DriverQuestions.INVOICE_PAST:
+                            if (ValidateTimeDelivery(input, out DateTime? date, out message))
+                            {
+                                profile.TimeDeliver = date.Value;
+                                flow.LastDriverQuestion = DriverQuestions.INVOICE_NOW;
+                                var customerReadModel = _driverService.GetCustomers(profile.TimeDeliver, profile.Driver.ID);
+                                Console.WriteLine(JsonConvert.SerializeObject(customerReadModel));
+                                Activity activity = turnContext.Activity.CreateReply();
+                                var data = JsonConvert.SerializeObject(WriteReadCustomerFb(customerReadModel));
+                                activity.ChannelData = JsonConvert.DeserializeObject(data);
+                                Console.WriteLine(activity.ChannelData);
+                                await turnContext.SendActivityAsync(activity, cancellationToken);
+
+                               
+
+                            }
+                            else
+                            {
+                                await turnContext.SendActivityAsync(message ?? "Xin lỗi, tôi không hiểu điều bạn đang nói!!");
+                            }
+                            break;
+
                         case DriverQuestions.CHOOSE_FUNCTIONAL_CUSTOMER:
-                            if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.MAPS).ToLower()))
-                            {
-                                
-                            }
-                            else if (input.Trim().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.ITEMS)))
+
+                            if (input.Trim().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.INVOICES)))
                             {
 
-                            }
-                            else if (input.Trim().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.CALL)))
-                            {
+                                flow.LastDriverQuestion = DriverQuestions.CHOOSE_STATUS_INVOICE;
 
+                                // reply giao dien quick button reply
+                                var replyBack = turnContext.Activity.CreateReply();
+                                var invoices = _invoiceService.GetInvoices(profile.TimeDeliver, profile.Driver.ID, profile.Data.CustomerDetail.Customer.Id);
+                                replyBack.ChannelData = ListInvoice(invoices as List<InvoiceReadModel>, profile.Data.CustomerDetail.Customer.Name);
+                                await turnContext.SendActivityAsync(replyBack);
                             }
+
                             break;
+                        case DriverQuestions.CHOOSE_STATUS_INVOICE:
+                            string key = input.Trim().Split('-').GetValue(0).ToString();
+                            Console.Write(key);
+                            switch (key)
+                            {
+                                case "ACCEPT_INVOICE":
+                                    string invoiceId = SplitCustomerPayLoad(input.Trim(), Key.ACCEPT_INVOICE, '-');
+                                    Console.WriteLine("CHAP NHAN DON HANG");
+                                    // cap nhat trang thai don hang
+                                    var status = _invoiceService.UpdateVoice(int.Parse(invoiceId, null), (int)StatusInvoice.COMPLETE);
+                                    if (status)
+                                    {
+                                        await turnContext.SendActivityAsync("Cập nhật trạng thái đơn hàng thành công");
+                                    }
+                                    break;
+                                case "CANCEL_INVOICE":
+                                    invoiceId = SplitCustomerPayLoad(input.Trim(), Key.CANCEL_INVOICE, '-');
+                                    status = _invoiceService.UpdateVoice(int.Parse(invoiceId, null), (int)StatusInvoice.CANCEL);
+                                    if (status)
+                                    {
+                                        await turnContext.SendActivityAsync("Cập nhật trạng thái đơn hàng thành công");
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
 
+
+
+
+                            break;
                         default:
                             break;
                     }
@@ -451,9 +461,205 @@ namespace EchoBot.PromptUsers
             };
         }
 
+        private object ButtonInvoice()
+        {
+
+            return new
+            {
+                attachment = new
+                {
+                    type = "template",
+                    payload = new
+                    {
+                        template_type = "button",
+                        text = "Chọn chức năng?",
+                        buttons = new List<dynamic>
+                        {
+                            new
+                            {
+                                type = "postback",
+                                title = $"Đơn hàng hôm nay - {DateTime.Now.Date}",
+                                payload = "INVOICE_NOW"
+                            },
+                             new
+                            {
+                                type = "postback",
+                                title = $"Đơn hàng khác",
+                                payload = "INVOICE_PAST"
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
+        private object Menu()
+        {
+            return new
+            {
+                
+                persistent_menu = new List<dynamic>
+                {
+                    new
+                    {
+                         locale = "vi_VI",
+                         composer_input_disabled = false,
+                         call_to_actions = new List<dynamic>
+                         {
+                             new
+                             {
+                                  title = "My Account",
+                                  type = "postback",
+                                  payload = "PAYBILL_PAYLOAD"
+                             },
+                              new
+                             {
+                                  title = "Contact Me",
+                                  type = "postback",
+                                  payload = "PAYBILL_PAYLOAD"
+                             },
+                         },
+                    },
+                       new
+                    {
+                         locale = "vi_VI",
+                         composer_input_disabled = false,
+                    },
+                }
+            };
+        }
+
+        private object BackHome()
+        {
+            return new
+            {
+                attachment = new
+                {
+                    type = "template",
+                    payload = new
+                    {
+                        template_type = "button",
+                        text = "Bạn muốn?",
+                        buttons = new List<dynamic>
+                        {
+                            new
+                            {
+                                title = "Trang chủ",
+                                type = "postback",
+                                payload = StatusButton.BACK_HOME.ToString(),
+                            },
+                            new
+                            {
+                                title = "Nhập lại",
+                                type = "postback",
+                                 payload = StatusButton.BACK_HOME.ToString(),
+                            },
+
+
+                        }
+                    }
+                }
+            };
+        }
+
+        // Ve giao dien danh sach cac don hang
+        private object ListInvoice(List<InvoiceReadModel> invoiceReads, string customerName)
+        {
+            List<dynamic> lstInvoice = new List<dynamic>();
+            foreach (var invoice in invoiceReads)
+            {
+                var lstButton = new List<dynamic>();
+                if ((int)StatusInvoice.CANCEL == invoice.Status)
+                {
+                    lstButton.Add(new
+                    {
+                        type = "postback",
+                        title = "Hủy đơn hàng",
+                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                    });
+
+                }
+                else if ((int)StatusInvoice.COMPLETE == invoice.Status)
+                {
+                    lstButton.Add(new
+                    {
+                        type = "postback",
+                        title = "Hủy đơn hàng",
+                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                    });
+
+                }
+                else
+                {
+                    lstButton.Add(new
+                    {
+                        type = "postback",
+                        title = "Hủy đơn hàng",
+                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                    });
+                    lstButton.Add(new
+                    {
+                        type = "postback",
+                        title = "Hủy đơn hàng",
+                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                    });
+                }
+
+                lstInvoice.Add(new
+                {
+                    title = $"{customerName} - {invoice.Code}",
+                    subtitle = $"Trạng thái: {ConvertStatusInvoice(invoice.Status)} ",
+                    buttons = lstButton
+                });
+            }
+            return new
+            {
+                attachment = new
+                {
+                    type = "template",
+                    composer_input_disabled = true,
+                    payload = new
+                    {
+                        template_type = "generic",
+                        elements = lstInvoice
+                    }
+                }
+            };
+        }
+
+
+        // ve giao dien quick reply
+        private object QuickReply()
+        {
+            return new
+            {
+                text = "Bạn muốn?",
+                quick_replies = new[]
+                {
+                    new
+                    {
+                        content_type = "text",
+                        title = "Trang chủ",
+                        payload = StatusButton.BACK_HOME.ToString(),
+                    },
+                     new
+                    {
+                        content_type = "text",
+                        title = "Nhập lại",
+                        payload = "po",
+                    }
+                }
+            };
+        }
+
         private object DetailCustomer(CustomerDetailReadModel customerDetail)
         {
             Console.WriteLine(customerDetail.Customer.PhoneNumber.ToString());
+            Console.WriteLine(customerDetail.Address.Lat + "," + customerDetail.Address.Lng);
             return new
             {
                 notification_type = "REGULAR",
@@ -464,27 +670,28 @@ namespace EchoBot.PromptUsers
                     {
                         template_type = "button",
                         text = customerDetail.Customer.Name + Environment.NewLine +
-                        string.Format("{0}-{1}-{2}-{3}",customerDetail.Address.StreetNumber,
-                            customerDetail.Address.Street,customerDetail.Address.District,customerDetail.Address.City),
-                        buttons = new[]
+                        string.Format("{0}-{1}-{2}-{3}", customerDetail.Address.StreetNumber,
+                            customerDetail.Address.Street, customerDetail.Address.District, customerDetail.Address.City),
+                        buttons = new List<dynamic>
                         {
                             new
                             {
                                 title = "Đơn hàng cần chuyển",
                                 type = "postback",
-                                payload = StatusButton.ITEMS.ToString()
+                                payload = StatusButton.INVOICES.ToString(),
                             },
                             new
                             {
                                 title = "Xem chỉ đường",
-                                type = "postback",
-                                payload = StatusButton.MAPS.ToString()
+                                type = "web_url",
+                                url = string.Format("https://www.google.com/maps/dir/?api=1&destination={0},{1}", customerDetail.Address.Lat, customerDetail.Address.Lng)
                             },
                               new
                             {
                                 title = "Gọi điện",
                                 type = "phone_number",
-                                payload = string.Format("+84{0}",customerDetail.Customer.PhoneNumber.Substring(1))
+                                payload = string.Format("+84{0}",customerDetail.Customer.PhoneNumber.Substring(1)),
+
                             }
 
 
@@ -492,6 +699,25 @@ namespace EchoBot.PromptUsers
                     }
                 }
             };
+        }
+
+        private string ConvertStatusInvoice(int status)
+        {
+            switch (status)
+            {
+                case 0:
+                    return "Đang xử lí";
+                case 1:
+                    return "Thiếu hàng/ cần đổi trả";
+                case 2:
+                    return "Đã giao hàng";
+                case 3:
+                    return "Hủy giao hàng";
+                case 4:
+                    return "Đã xếp lịch";
+                default:
+                    return "";
+            }
         }
 
         #endregion
@@ -502,10 +728,10 @@ namespace EchoBot.PromptUsers
         /// <param name="payload"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        private string SplitCustomerPayLoad(string payload, Key key)
+        private string SplitCustomerPayLoad(string payload, Key key, char split)
         {
             var isCorrect = payload.Contains(key.ToString());
-            return isCorrect ? payload.Split('-').GetValue(1).ToString() : string.Empty;
+            return isCorrect ? payload.Split(split).GetValue(1).ToString() : string.Empty;
         }
         private bool ValidateUserName(string input, out string username, out string message)
         {
@@ -520,7 +746,7 @@ namespace EchoBot.PromptUsers
             {
                 username = input.Trim();
                 var isExisit = _accountService.IsExistAccount(username);
-                message = isExisit ? null : "Tài khoản không tồn tại.Vui lòng nhập lại!";
+                message = isExisit ? null : "Tài khoản không tồn tại.";
             }
 
             return message is null;
@@ -622,6 +848,30 @@ namespace EchoBot.PromptUsers
 
             return false;
         }
+
+        private static bool ValidateTimeDelivery(string input, out DateTime? date, out string message)
+        {
+            message = null;
+            date = null;
+            string dateDelivery = input.Trim();
+            bool check = DateTime.TryParseExact(dateDelivery, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime dateResult);
+            if (check)
+            {
+                if (dateResult.Date >= DateTime.Now.AddDays(1).Date)
+                {
+                    message = "Ngày giao hàng không lớn hơn ngày hiện tại";
+
+                }
+                date = dateResult;
+            }
+            else
+            {
+                message = "Định dạng chưa hợp lệ !!!";
+            }
+            return message is null;
+
+        }
+
         public enum StatusButton
         {
             BeginTransition,
@@ -629,16 +879,27 @@ namespace EchoBot.PromptUsers
             INVOICE_PAST,
             BACK,
             ADDRESS,
-            //--------------------
-            MAPS,
-            CALL,
-            ITEMS
+            INVOICES,
+
+            BACK_HOME
+
         }
         public enum Key
         {
             CUSTOMER,
-            
+            ACCEPT_INVOICE,
+            CANCEL_INVOICE
         }
+
+        public enum StatusInvoice
+        {
+            INPROCESS = 0,
+            LOSE_PRODUCT = 1,
+            COMPLETE = 2,
+            CANCEL = 3,
+            SCHEDULE = 4
+        }
+
     }
 
 }
