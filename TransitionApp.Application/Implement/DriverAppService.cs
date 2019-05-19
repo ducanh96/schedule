@@ -35,6 +35,16 @@ namespace TransitionApp.Application.Implement
             var response = new CreateDriverResponse();
             try
             {
+                var existCode = _driverService.checkExist(request.Driver.Code);
+                if (existCode)
+                {
+                    return Task.FromResult(new CreateDriverResponse
+                    {
+                        Success = false,
+                        Message = "Trùng code"
+                        
+                    });
+                }
                 CreateDriverCommand vehicleCommand = new CreateDriverCommand
                 {
                     City = request.Driver.Address.City,
@@ -274,6 +284,39 @@ namespace TransitionApp.Application.Implement
                     OK = false
                 });
             }
+        }
+
+        public Task<StatusResponse> ResetPassword(AccountRequest request)
+        {
+         
+            try
+            {
+                ResetPasswordDriverCommand reset = new ResetPasswordDriverCommand
+                {
+                    Password = request.NewPassword,
+                    UserName = request.DriverID
+                };
+                var result = _bus.SendCommand(reset);
+                Task<object> status = result as Task<object>;
+                var statusSuccess = (bool)status.Result;
+                return Task.FromResult(new StatusResponse
+                {
+                    OK = statusSuccess
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new StatusResponse
+                {
+                  
+
+                });
+
+            }
+
+
+
         }
 
         public Task<CreateDriverResponse> Update(int id, CreateDriverRequest request)

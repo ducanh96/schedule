@@ -70,5 +70,13 @@ namespace TransitionApp.Controllers
             var result = await _driverAppService.Delete(id);
             return Ok(result);
         }
+
+        [HttpPut]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody]AccountRequest request)
+        {
+            var result = await _driverAppService.ResetPassword(request);
+            return Ok(result);
+        }
     }
 }

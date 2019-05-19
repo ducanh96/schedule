@@ -39,12 +39,11 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                         , @Lat
                                         , @Lng
                                         , @Street                              
-                                        , @DeliveryTime
-                                        , @Served); 
+                                        , @StreetNumber); 
 
-          SELECT Id from Invoice where Id = CAST(SCOPE_IDENTITY() as int)";
+          SELECT Id from Address where Id = CAST(SCOPE_IDENTITY() as int)";
 
-                    var customerId = conn.QueryFirst<int>(sQuery, new
+                    var addressId = conn.QueryFirst<int>(sQuery, new
                     {
                         City = customer.AddressCustomer.City,
                         Country = customer.AddressCustomer.Country,
@@ -72,13 +71,57 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     {
                         Code = customer.Code.Value,
                         Name = customer.Name.Full,
-                        AddressId = customerId,
+                        AddressId = addressId,
                         PhoneNumber = customer.PhoneNumeber.Value,
                     });
 
                     trans.Complete();
 
                 };
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task Update(Customer customer)
+        {
+            using (var trans = new TransactionScope())
+            {
+                using (IDbConnection conn = Connection)
+                {
+
+                    string sQuery =
+                         @"Update Address
+                          SET City = @City,
+                              Country = @Country,
+                              District = @District,
+                              Lat = @Lat,
+                              Lng = @Lng,
+                              Street = @Street,
+                              StreetNumber = @StreetNumber
+                          WHERE Id = (
+                        SELECT AddressId FROM Customer 
+                        WHERE Lower(Code) = Lower(@Code)
+                    );
+                    Update Customer
+                    Set Name = @Name,
+                        PhoneNumber = @PhoneNumber
+                    Where Lower(Code) = Lower(@Code);";
+
+                    var resultInvoice = conn.Execute(sQuery, new
+                    {
+                        City = customer.AddressCustomer.City,
+                        Country = customer.AddressCustomer.Country,
+                        District = customer.AddressCustomer.District,
+                        Lat = customer.AddressCustomer.Lat,
+                        Lng = customer.AddressCustomer.Lng,
+                        Street = customer.AddressCustomer.Street,
+                        StreetNumber = customer.AddressCustomer.StreetNumber,
+                        Code = customer.Code.Value,
+                        Name = customer.Name.Full,
+                        PhoneNumber = customer.PhoneNumeber.Value
+                    });
+                };
+                trans.Complete();
             }
             return Task.CompletedTask;
         }

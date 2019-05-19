@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderService.Domain.Commands.Invoices;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +17,11 @@ namespace TransitionApp.Domain.Interface.Repository
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
 
         Task Create(Invoice invoice);
+        Task Update(Invoice invoice);
 
         CustomerReadModel GetCustomer(string customerCode);
         IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId);
         InvoiceReadModel UpdateVoice(int invoiceId, int status);
-
-
+        InvoiceReadModel GetInvoice(string code);
     }
 }

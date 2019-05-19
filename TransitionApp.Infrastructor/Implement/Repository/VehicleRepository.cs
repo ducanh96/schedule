@@ -61,9 +61,9 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                 , @maxPage INT; --so page thuc te
                             SELECT @totalRow = COUNT(*) FROM dbo.Vehicle
                                WHERE (@Code IS NULL OR LOWER(Code) = LOWER(@Code))
-                               AND (@LicensePlate IS NULL OR LOWER(LicensePlate) = LOWER(@LicensePlate))
+                               AND (@LicensePlate IS NULL OR LOWER(LicensePlate) like LOWER(@LicensePlate))
                                AND (@VehicleType = 0  OR VehicleType = @VehicleType)
-                               AND (@Name IS NULL OR Name like '%@Name%');
+                               AND (@Name IS NULL OR LOWER(Name) like LOWER(@SearchName));
                              
                             SELECT @numPageTemp = CAST(@totalRow AS FLOAT) / @pageSize;
                         BEGIN
@@ -79,9 +79,9 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                            BEGIN 
                             SELECT Id, LicensePlate, Capacity, VehicleType, Volume, Code, Name, MaxLoad, Driver, Note FROM dbo.Vehicle
                                WHERE (@Code IS NULL OR LOWER(Code) = LOWER(@Code))
-                               AND (@LicensePlate IS NULL OR LOWER(LicensePlate) = LOWER(@LicensePlate))
+                               AND (@LicensePlate IS NULL OR LOWER(LicensePlate) like LOWER(@LicensePlate))
                                AND (@VehicleType = 0  OR VehicleType = @VehicleType)
-                               AND (@Name IS NULL OR Name like '%@Name%')
+                               AND (@Name IS NULL OR LOWER(Name) like LOWER(@SearchName))
                                ORDER BY id OFFSET(@page - 1) * @pageSize ROWS FETCH NEXT @pageSize ROWS ONLY;
                            END
                         ELSE
@@ -106,9 +106,10 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     page = page,
                     pageSize = pageSize,
                     Code = vehicleModel.Code,
-                    LicensePlate = vehicleModel.LicensePlate,
+                    LicensePlate = "%" + vehicleModel.LicensePlate + "%",
                     VehicleType = vehicleModel.VehicleType,
                     Name = vehicleModel.Name,
+                    SearchName = "%" + vehicleModel.Name + "%",
                 }))
                 {
                     var vehicle = multi.Read<VehicleReadModel>();
@@ -294,6 +295,24 @@ namespace TransitionApp.Infrastructor.Implement.Repository
           
 
 
+        }
+
+        public bool checkExist(string code)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = "SELECT CASE " +
+                    " WHEN EXISTS (SELECT 1 FROM VEHICLE WHERE Lower(Code) = Lower(@Code)) " +
+                    " THEN 1 " +
+                    " ELSE 0" +
+                    " END ";
+                var result = conn.QueryFirstOrDefault<bool>(sQuery, new
+                {
+                    Code = code
+                }
+                );
+                return result;
+            }
         }
 
         #endregion

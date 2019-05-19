@@ -20,6 +20,7 @@ namespace TransitionApp.Application.Interface
         Task<CreateDriverResponse> Update(int id, CreateDriverRequest request);
         Task<StatusResponse> ImportExcel(IFormFile file);
         Task<StatusResponse> Delete(int id);
+        Task<StatusResponse> ResetPassword(AccountRequest request);
         #endregion
     }
 }

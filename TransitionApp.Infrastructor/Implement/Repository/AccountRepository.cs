@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 using TransitionApp.Domain.Interface.Repository;
+using TransitionApp.Domain.Model.Entity;
 using TransitionApp.Domain.ReadModel.Account;
 
 namespace TransitionApp.Infrastructor.Implement.Repository
@@ -47,6 +49,24 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 });
                 Console.WriteLine(result);
                 return result != null;
+            }
+        }
+
+        public bool ResetPassword(Account account)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"Update Account  
+                                        SET Password = @Password
+                           WHERE UserName = @UserName;";
+
+                var result = conn.Execute(sQuery, new
+                {
+                    UserName = account.UserName.Value,
+                    Password = account.Password.Value,
+
+                });
+                return result > 0;
             }
         }
 

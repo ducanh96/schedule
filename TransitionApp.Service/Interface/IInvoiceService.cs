@@ -17,6 +17,7 @@ namespace TransitionApp.Service.Interface
 
         #region For Bot
         bool UpdateVoice(int invoiceId, int status);
+        InvoiceReadModel GetInvoice(string code);
         #endregion
     }
 }

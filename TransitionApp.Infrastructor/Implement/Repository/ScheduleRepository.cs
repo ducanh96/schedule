@@ -299,6 +299,24 @@ namespace TransitionApp.Infrastructor.Implement.Repository
 
                         var resultCus = conn.Execute(queryRouteInfo, routeInfos);
 
+                        // cap nhat trang thai don hang
+                        string updateInvoice = @"Update Invoice
+                            Set Status = @Status
+                            Where Id = @Id; ";
+
+                       
+                        route.Customers.ForEach(x =>
+                        {
+                            conn.Execute(updateInvoice, new
+                            {
+                                Status = (int)INVOICE_STATUS.DaXepLich,
+                                Id = int.Parse(x.Invoices)
+                            });
+                        });
+
+                       
+                        
+
                         #endregion
 
                     }

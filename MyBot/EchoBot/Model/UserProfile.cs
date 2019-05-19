@@ -23,6 +23,9 @@ namespace EchoBot.Model
         public string Date { get; set; }
         public bool IsStartConverstation { get; set; } = false;
         public bool IsStartTransition { get; set; } = false;
+        public bool IsStartInvoice { get; set; } = false;
+        public bool IsLogin { get; set; } = false;
+
         public UserProfile()
         {
             Data = new DataMoment();

@@ -20,6 +20,7 @@ namespace TransitionApp.Domain.Interface.Repository
         #region Write
         DriverModel Add(Driver driver);
         DriverModel Update(Driver driver);
+        bool checkExist(string code);
         bool ImportExcel(List<Driver> drivers);
         bool Delete(int id);
         DriverReadModel GetByAccount(int userId);

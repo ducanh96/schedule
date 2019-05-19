@@ -102,7 +102,7 @@ namespace TransitionApp.Application.Implement
                 Console.WriteLine(ex.Message);
                 throw;
             }
-            return Task.FromResult(response);
+           
             
         }
         /// <summary>

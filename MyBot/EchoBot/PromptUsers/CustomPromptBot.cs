@@ -110,7 +110,7 @@ namespace EchoBot.PromptUsers
 
         }
 
-
+        // GIAO DIEN trang chu
         private async Task SendIntroCardAsync(ITurnContext turnContext, CancellationToken cancellationToken)
         {
             var response = turnContext.Activity.CreateReply();
@@ -129,9 +129,12 @@ namespace EchoBot.PromptUsers
                     Value = ValuesDisplay.GetValueOrDefault(StatusButton.BeginTransition),
 
                 },
-                new CardAction(ActionTypes.OpenUrl,
-                    "Đến trang đặt hàng", null, "Order", "Ask a question",
-                    "https://stackoverflow.com/questions/tagged/botframework"),
+                new CardAction  {
+                    Title = "Tình trạng đơn hàng",
+                    Type = ActionTypes.ImBack,
+                    Value = ValuesDisplay.GetValueOrDefault(StatusButton.BeginTransition),
+
+                },
 
             };
 
@@ -145,7 +148,7 @@ namespace EchoBot.PromptUsers
             string message;
             string input = turnContext.Activity.Text?.Trim();
             Console.WriteLine(turnContext.Activity.Text);
-            if (!profile.IsStartConverstation)
+            if (!profile.IsStartConverstation)  //chua bat dau cuoc tro chuyen
             {
 
                 profile.IsStartConverstation = true;
@@ -154,15 +157,14 @@ namespace EchoBot.PromptUsers
                
 
             }
-            else
+            else // trang thai bat dau cuoc tro chuyen
             {
-                if (profile.IsStartTransition)
+                if (profile.IsStartTransition) // bat dau lien quan van chuyen don han
                 {
                     switch (flow.LastDriverQuestion)
                     {
-
+                      
                         case DriverQuestions.USERNAME:
-
                             // neu bam vao nut back
                             if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.BACK_HOME).ToLower()))
                             {
@@ -180,8 +182,6 @@ namespace EchoBot.PromptUsers
                                     await turnContext.SendActivityAsync($"Bạn vui lòng nhập mật khẩu");
                                     flow.LastDriverQuestion = DriverQuestions.PASSWORD;
 
-
-                                   
 
                                 }
                                 else
@@ -320,6 +320,15 @@ namespace EchoBot.PromptUsers
                                     if (status)
                                     {
                                         await turnContext.SendActivityAsync("Cập nhật trạng thái đơn hàng thành công");
+
+                                        // quay ve trang danh sach khach hang
+                                        flow.LastDriverQuestion = DriverQuestions.INVOICE_NOW;
+                                        var customerReadModel = _driverService.GetCustomers(profile.TimeDeliver, profile.Driver.ID);
+                                        Activity activity = turnContext.Activity.CreateReply();
+                                        var data = JsonConvert.SerializeObject(WriteReadCustomerFb(customerReadModel));
+                                        activity.ChannelData = JsonConvert.DeserializeObject(data);
+                                        Console.WriteLine(activity.ChannelData);
+                                        await turnContext.SendActivityAsync(activity, cancellationToken);
                                     }
                                     break;
                                 case "CANCEL_INVOICE":
@@ -328,6 +337,16 @@ namespace EchoBot.PromptUsers
                                     if (status)
                                     {
                                         await turnContext.SendActivityAsync("Cập nhật trạng thái đơn hàng thành công");
+                                        
+                                        // quay ve trang danh sach khach hang
+                                        flow.LastDriverQuestion = DriverQuestions.INVOICE_NOW;
+                                        var customerReadModel = _driverService.GetCustomers(profile.TimeDeliver, profile.Driver.ID);
+                                        Activity activity = turnContext.Activity.CreateReply();
+                                        var data = JsonConvert.SerializeObject(WriteReadCustomerFb(customerReadModel));
+                                        activity.ChannelData = JsonConvert.DeserializeObject(data);
+                                        Console.WriteLine(activity.ChannelData);
+                                        await turnContext.SendActivityAsync(activity, cancellationToken);
+
                                     }
                                     break;
                                 default:
@@ -342,7 +361,22 @@ namespace EchoBot.PromptUsers
                             break;
                     }
                 }
-                else
+                else if (profile.IsStartInvoice) // bat dau trang thai kiem tra tinh trang don hang
+                {
+                    switch (flow.LastStatusInvoiceQuestion)
+                    {
+                        case StatusInvoiceQuestion.NONE:
+                            await SendIntroCardAsync(turnContext, cancellationToken);
+                            break;
+                        case StatusInvoiceQuestion.INPUT_INVOICE_CODE:
+
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+                else  // khong nam trong 2 truong hop tren
                 {
 
                     // kiêm tra nguoi dung có bấm nút bd ko
@@ -352,6 +386,24 @@ namespace EchoBot.PromptUsers
                         await turnContext.SendActivityAsync($"Chào bạn");
                         await turnContext.SendActivityAsync($"Bạn vui lòng nhập tên đăng nhập");
                         flow.LastDriverQuestion = DriverQuestions.USERNAME;
+
+                        //var reply = turnContext.Activity.CreateReply();
+                        //reply.ChannelData = LoginOrChangePassword(profile.IsLogin);
+                        //flow.LastDriverQuestion = DriverQuestions.CHOOSE_LOGIN_RESET;
+
+                    }
+                    else if (input.ToLower().Equals(ValuesDisplay.GetValueOrDefault(StatusButton.STATUS_INVOICE).ToLower()))
+                    {
+                        profile.IsStartInvoice = true;
+                        await turnContext.SendActivityAsync($"Chào bạn");
+                        await turnContext.SendActivityAsync($"Bạn vui lòng nhập mã đơn hàng!!!");
+                        flow.LastStatusInvoiceQuestion = StatusInvoiceQuestion.INPUT_INVOICE_CODE;
+
+                    }
+                    else
+                    {
+                        await turnContext.SendActivityAsync($"Xin lỗi bạn, chúng tôi không hiểu ý bạn");
+
                     }
 
                 }
@@ -461,6 +513,41 @@ namespace EchoBot.PromptUsers
             };
         }
 
+        private object LoginOrChangePassword(bool isLogin = false)
+        {
+            var lstButton = new List<dynamic>();
+            if (!isLogin)
+            {
+                lstButton.Add(new
+                {
+                    type = "postback",
+                    title = $"Đăng nhập",
+                    payload = StatusButton.LOGIN.ToString()
+                });
+            }
+            lstButton.Add(new
+            {
+                type = "postback",
+                title = $"Đổi mật khẩU",
+                payload = StatusButton.CHANGE_PASSWORD.ToString()
+            });
+
+
+            return new
+            {
+                attachment = new
+                {
+                    type = "template",
+                    payload = new
+                    {
+                        template_type = "button",
+                        text = "Chọn chức năng?",
+                        buttons = lstButton
+                    }
+                }
+            };
+        }
+
         private object ButtonInvoice()
         {
 
@@ -478,7 +565,7 @@ namespace EchoBot.PromptUsers
                             new
                             {
                                 type = "postback",
-                                title = $"Đơn hàng hôm nay - {DateTime.Now.Date}",
+                                title = $"Đơn hàng hôm nay",
                                 payload = "INVOICE_NOW"
                             },
                              new
@@ -569,8 +656,36 @@ namespace EchoBot.PromptUsers
             foreach (var invoice in invoiceReads)
             {
                 var lstButton = new List<dynamic>();
-                if ((int)StatusInvoice.CANCEL == invoice.Status)
-                {
+                //if ((int)StatusInvoice.CANCEL == invoice.Status)
+                //{
+                //    lstButton.Add(new
+                //    {
+                //        type = "postback",
+                //        title = "Hủy đơn hàng",
+                //        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                //    });
+
+                //}
+                //else if ((int)StatusInvoice.COMPLETE == invoice.Status)
+                //{
+                //    lstButton.Add(new
+                //    {
+                //        type = "postback",
+                //        title = "Hủy đơn hàng",
+                //        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                //    });
+
+                //}
+               
+                    lstButton.Add(new
+                    {
+                        type = "postback",
+                        title = "Đã giao hàng",
+                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
+
+                    });
                     lstButton.Add(new
                     {
                         type = "postback",
@@ -578,36 +693,7 @@ namespace EchoBot.PromptUsers
                         payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
 
                     });
-
-                }
-                else if ((int)StatusInvoice.COMPLETE == invoice.Status)
-                {
-                    lstButton.Add(new
-                    {
-                        type = "postback",
-                        title = "Hủy đơn hàng",
-                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
-
-                    });
-
-                }
-                else
-                {
-                    lstButton.Add(new
-                    {
-                        type = "postback",
-                        title = "Hủy đơn hàng",
-                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
-
-                    });
-                    lstButton.Add(new
-                    {
-                        type = "postback",
-                        title = "Hủy đơn hàng",
-                        payload = $"{Key.CANCEL_INVOICE}-{invoice.Id}"
-
-                    });
-                }
+              
 
                 lstInvoice.Add(new
                 {
@@ -752,6 +838,21 @@ namespace EchoBot.PromptUsers
             return message is null;
         }
 
+        private bool ValadateStatusInvoice(string input, out string invoiceCode, out string message)
+        {
+            message = null;
+            invoiceCode = null;
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                message = "Mã code không được để trống";
+            }
+            else
+            {
+                invoiceCode = input.Trim();
+                _invoiceService.GetInvoices
+            }
+        }
+
         private bool ValidatePassword(string input, string usename, out string password, out string message, out AccountReadModel account)
         {
             password = null;
@@ -875,11 +976,20 @@ namespace EchoBot.PromptUsers
         public enum StatusButton
         {
             BeginTransition,
+            STATUS_INVOICE,
+
+            // vs BeginTransition
             INVOICE_NOW,
             INVOICE_PAST,
             BACK,
             ADDRESS,
             INVOICES,
+
+            LOGIN,
+            CHANGE_PASSWORD,
+
+
+            // Voi STATUS_INVOICE
 
             BACK_HOME
 

@@ -9,5 +9,6 @@ namespace TransitionApp.Domain.Interface.Repository
     public interface ICustomerRepository
     {
         Task Create(Customer customer);
+        Task Update(Customer customer);
     }
 }

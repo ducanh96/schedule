@@ -13,5 +13,6 @@ namespace TransitionApp.Service.Interface
         VehicleReadModel GetById(int id);
         SearchVehicleReadModel GetAll(int page, int pageSize, SearchVehicleModel vehicleModel);
         bool checkExist(int id);
+        bool checkExist(string code);
     }
 }

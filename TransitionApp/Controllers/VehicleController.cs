@@ -37,6 +37,7 @@ namespace TransitionApp.Controllers
         {
             var result = await _vehicleAppService.Create(request);
             return Ok(result);
+
         }
 
         [HttpPost]

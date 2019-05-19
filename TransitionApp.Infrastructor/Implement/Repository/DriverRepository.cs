@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Transactions;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.Model.Entity;
 using TransitionApp.Domain.ReadModel;
@@ -22,10 +23,12 @@ namespace TransitionApp.Infrastructor.Implement.Repository
         }
         public DriverModel Add(Driver driver)
         {
-            using (IDbConnection conn = Connection)
+            using (var trans = new TransactionScope())
             {
-                string sQuery =
-                    @"Insert Into Driver(Name
+                using (IDbConnection conn = Connection)
+                {
+                    string sQuery =
+                        @"Insert Into Driver(Name
                                             , Code
                                             , PhoneNumber
                                             , Status
@@ -59,27 +62,48 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                     , @StreetNumber); 
                            SELECT Id from Driver where Id = CAST(SCOPE_IDENTITY() as int)";
 
-                var result = conn.QueryFirstOrDefault<DriverModel>(sQuery, new
-                {
-                    Name = driver.Name.Full,
-                    Code = driver.Code.Value,
-                    PhoneNumber = driver.PhoneNumber.Value,
-                    Status = driver.Status.Value,
-                    UserID = driver.UserID.Value,
-                    StartDate = driver.StartDate.Value,
-                    DoB = driver.DoB.Value,
-                    IDCardNumber = driver.IDCardNumber.Value,
-                    Note = driver.Note.Value,
-                    Sex = driver.Sex.Value,
-                    VehicleTypeIDs = driver.VehicleTypeIDs.Value,
-                    City = driver.Address.City,
-                    Country = driver.Address.Country,
-                    District = driver.Address.District,
-                    Street = driver.Address.Street,
-                    StreetNumber = driver.Address.StreetNumber
-                });
-                return result;
+                    var result = conn.QueryFirstOrDefault<DriverModel>(sQuery, new
+                    {
+                        Name = driver.Name.Full,
+                        Code = driver.Code.Value,
+                        PhoneNumber = driver.PhoneNumber.Value,
+                        Status = driver.Status.Value,
+                        UserID = driver.UserID.Value,
+                        StartDate = driver.StartDate.Value,
+                        DoB = driver.DoB.Value,
+                        IDCardNumber = driver.IDCardNumber.Value,
+                        Note = driver.Note.Value,
+                        Sex = driver.Sex.Value,
+                        VehicleTypeIDs = driver.VehicleTypeIDs.Value,
+                        City = driver.Address.City,
+                        Country = driver.Address.Country,
+                        District = driver.Address.District,
+                        Street = driver.Address.Street,
+                        StreetNumber = driver.Address.StreetNumber
+                    });
+
+                    string queryAccount =
+                               @"Insert Into Account(
+                                          Role
+                                        , Password
+                                        , UserName)
+
+                                Values(@Role
+                                    , @Password
+                                    , @UserName); ";
+
+                    conn.Execute(queryAccount, new
+                    {
+                        Role = 1,
+                        Password = "123456",
+                        UserName = driver.Code.Value,
+                    });
+                    trans.Complete();
+
+                    return result;
+                }
             }
+                
         }
 
 
@@ -318,6 +342,24 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     DriverId = driverId,
                     Date = date
                 });
+                return result;
+            }
+        }
+
+        public bool checkExist(string code)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = "SELECT CASE " +
+                    " WHEN EXISTS (SELECT 1 FROM DRIVER WHERE Lower(Code) = Lower(@Code)) " +
+                    " THEN 1 " +
+                    " ELSE 0" +
+                    " END ";
+                var result = conn.QueryFirstOrDefault<bool>(sQuery, new
+                {
+                    Code = code
+                }
+                );
                 return result;
             }
         }

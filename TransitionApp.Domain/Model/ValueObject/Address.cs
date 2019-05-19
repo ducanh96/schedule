@@ -38,6 +38,10 @@ namespace TransitionApp.Domain.Model.ValueObject
             FullAddress = fullAddress;
         }
 
-       
+        public Address(string city, string country, string district, string street, string streetNumber, string lat, string lng) : this(city, country, district, street, streetNumber)
+        {
+            Lat = lat;
+            Lng = lng;
+        }
     }
 }

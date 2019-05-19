@@ -18,6 +18,11 @@ namespace TransitionApp.Service.Implement
             _driverRepository = driverRepository;
         }
 
+        public bool checkExist(string code)
+        {
+            return _driverRepository.checkExist(code);
+        }
+
         public DriverReadModel Get(int id)
         {
             if (id == 0)

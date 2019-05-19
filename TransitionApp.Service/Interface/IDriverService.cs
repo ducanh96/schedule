@@ -15,6 +15,7 @@ namespace TransitionApp.Service.Interface
         DriverReadModel GetByCode(string code);
         DriverReadModel GetByAccount(int userId);
         IEnumerable<CustomerReadModel> GetCustomers(DateTime date, int driverId);
+        bool checkExist(string code);
 
     }
 }

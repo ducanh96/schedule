@@ -88,6 +88,16 @@ namespace TransitionApp.Application.Implement
         {
             try
             {
+                var existCode = _vehicleService.checkExist(vehicleRequest.Code);
+                if (existCode)
+                {
+                    return Task.FromResult(new StatusResponse
+                    {
+                        OK = false,
+                        Content = "Trùng code"
+                    });
+                }
+
                 CreateVehicleCommand vehicleCommand = new CreateVehicleCommand
                 {
                     LicensePlate = vehicleRequest.LicensePlate,
@@ -157,13 +167,13 @@ namespace TransitionApp.Application.Implement
                 {
                     Code = vehicleRequest.Code,
                     DriverID = vehicleRequest.DriverID,
-                    ID = vehicleRequest.ID,
+                    ID = int.Parse(vehicleRequest.ID),
                     LicensePlate = vehicleRequest.LicensePlate,
                     MaxLoad = vehicleRequest.MaxLoad,
                     Name = vehicleRequest.Name,
                     Note = vehicleRequest.Note,
                     TypeID = vehicleRequest.TypeID,
-                    Volume = string.Join('-', vehicleRequest.MaxVolume).ToString()
+                    Volume = string.Join('-', vehicleRequest.MaxVolume.Select(x=> x.HasValue? x:0))
                 };
                 var result = _bus.SendCommand(vehicleCommand);
                 Task<object> status = result as Task<object>;

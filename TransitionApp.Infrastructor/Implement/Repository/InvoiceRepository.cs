@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
+using OrderService.Domain.Commands.Invoices;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -249,6 +250,83 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Id = invoiceId
                 });
                 return result;
+            }
+        }
+
+        public Task Update(Invoice invoice)
+        {
+            using (var trans = new TransactionScope())
+            {
+                using (IDbConnection conn = Connection)
+                {
+                    string sQuery =
+                        @"Update Invoice
+                        SET TotalPrice = @TotalPrice,
+                           WeightTotal = @WeightTotal
+                        WHERE Lower(Code) = Lower(@Code);
+                    SELECT Id FROM Invoice WHERE Lower(Code) = Lower(@Code)";
+
+                    var invoiceId = conn.QueryFirstOrDefault<int>(sQuery, new
+                    {
+                        Code = invoice.Code.Value,
+                        TotalPrice = invoice.TotalPrice.Value,
+                        WeightTotal = invoice.WeightTotal.Value,
+                    });
+
+                    string queryDeleteItem =
+                                  @"DELETE FROM Item
+                                    WHERE InvoiceId = @InvoiceId";
+
+                    var result = conn.Execute(queryDeleteItem, new
+                    {
+                        InvoiceId = invoiceId
+                    });
+
+
+
+                    string queryItem =
+                                  @"Insert Into Item(
+                                          Deliveried
+                                        , Price
+                                        , ProductName
+                                        , TotalPrice
+                                        , UnitName
+                                        , Quantity
+                                        , Weight
+                                        , InvoiceId)
+
+                                Values(
+                                      @Deliveried
+                                    , @Price
+                                    , @ProductName
+                                    , @TotalPrice
+                                    , @UnitName                              
+                                    , @Quantity
+                                    , @Weight
+                                     ,@InvoiceId); ";
+
+                    List<InsertItemModel> insertItems = new List<InsertItemModel>();
+                    invoice.Items.ForEach(x =>
+                    {
+                        InsertItemModel insertItem = new InsertItemModel
+                        {
+                            Price = x.Price.Value,
+                            ProductName = x.ProductName.Full,
+                            Quantity = x.Quantity.Value,
+                            TotalPrice = x.TotalPrice.Value,
+                            UnitName = x.UnitName.Value,
+                            Weight = x.Weight.Value,
+                            InvoiceId = invoiceId
+                        };
+                        insertItems.Add(insertItem);
+                    });
+
+                    conn.Execute(queryItem, insertItems);
+                    trans.Complete();
+
+                }
+
+                return Task.CompletedTask;
             }
         }
 

@@ -16,14 +16,17 @@ namespace TransitionApp.Domain.CommandHanders
         IRequestHandler<CreateDriverCommand, object>,
         IRequestHandler<EditDriverCommand, object>,
         IRequestHandler<ImportDriverCommand, object>,
-        IRequestHandler<DeleteDriverCommand, object>
+        IRequestHandler<DeleteDriverCommand, object>,
+        IRequestHandler<ResetPasswordDriverCommand, object>
     {
         private readonly IDriverRepository _driverRepository;
         private readonly IMediatorHandler _bus;
+        private readonly IAccountRepository _accountRepository;
 
-        public DriverCommandHandler(IDriverRepository driverRepository, IMediatorHandler bus) : base(bus)
+        public DriverCommandHandler(IDriverRepository driverRepository, IAccountRepository accountRepository, IMediatorHandler bus) : base(bus)
         {
             _driverRepository = driverRepository;
+            _accountRepository = accountRepository;
             _bus = bus;
         }
         public Task<object> Handle(CreateDriverCommand command, CancellationToken cancellationToken)
@@ -116,6 +119,14 @@ namespace TransitionApp.Domain.CommandHanders
             //}
             Console.WriteLine("654321");
             var result = _driverRepository.Delete(request.ID);
+            return Task.FromResult(result as object);
+        }
+
+        public Task<object> Handle(ResetPasswordDriverCommand request, CancellationToken cancellationToken)
+        {
+            Account account = new Account(new Model.ValueObject.Password(request.Password)
+                                        , new Model.ValueObject.UserName(request.UserName));
+            var result = _accountRepository.ResetPassword(account);
             return Task.FromResult(result as object);
         }
     }

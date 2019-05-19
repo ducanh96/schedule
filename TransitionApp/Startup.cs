@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json.Serialization;
-using OrderService.Domain.Commands.Invoices;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO;
@@ -80,6 +79,7 @@ namespace TransitionApp
             services.AddScoped<IRequestHandler<EditDriverCommand, object>, DriverCommandHandler>();
             services.AddScoped<IRequestHandler<ImportDriverCommand, object>, DriverCommandHandler>();
             services.AddScoped<IRequestHandler<DeleteDriverCommand, object>, DriverCommandHandler>();
+            services.AddScoped<IRequestHandler<ResetPasswordDriverCommand, object>, DriverCommandHandler>();
 
             // DI Invoice
             services.AddTransient<IInvoiceAppService, InvoiceAppService>();
@@ -100,6 +100,7 @@ namespace TransitionApp
             services.AddTransient<IAccountService, AccountService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
 
+
             #region Add event
 
             //services.AddScoped<INotificationHandler<VehicleCreateEvent>, VehicleCreateEvent>();
@@ -115,7 +116,7 @@ namespace TransitionApp
             container.RegisterInstance(Configuration);
             //add masstran
 
-            var ipValue = "192.168.1.32";
+            var ipValue = "localhost";
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
@@ -153,7 +154,7 @@ namespace TransitionApp
                     {
                         e.Consumer<CustomerConsumer>(container);
                     });
-
+                  
 
                 });
 

@@ -11,7 +11,7 @@ using TransitionApp.Domain.Model.Entity;
 
 namespace TransitionApp.Domain.Consumer.Invoice
 {
-    public class InvoiceConsumer : IConsumer<AddNewInvoiceCommand>
+    public class InvoiceConsumer : IConsumer<AddNewInvoiceCommand>, IConsumer<UpdateInvoiceCommand>
     {
         public IInvoiceRepository _invoiceRepository;
 
@@ -20,7 +20,7 @@ namespace TransitionApp.Domain.Consumer.Invoice
             _invoiceRepository = invoiceRepository;
         }
 
-      
+
         public Task Consume(ConsumeContext<AddNewInvoiceCommand> context)
         {
             try
@@ -43,28 +43,28 @@ namespace TransitionApp.Domain.Consumer.Invoice
                         );
                     items.Add(item);
                 });
-                if(customerRead != null)
+                if (customerRead != null)
                 {
-                   invoice = new Model.Entity.Invoice(
-                   new Code(newInvoice.Code),
-                   new Note(newInvoice.Note),
-                   new Status(newInvoice.Status),
-                   new Price(newInvoice.TotalPrice),
-                   new Weight(newInvoice.WeightTotal),
-                   new Identity(customerRead.Id),
-                   newInvoice.DeliveryTime,
-                   new IsServed(newInvoice.Served),
-                   items
-                   );
+                    invoice = new Model.Entity.Invoice(
+                    new Code(newInvoice.Code),
+                    new Note(newInvoice.Note),
+                    new Status(newInvoice.Status),
+                    new Price(newInvoice.TotalPrice),
+                    new Weight(newInvoice.WeightTotal),
+                    new Identity(customerRead.Id),
+                    newInvoice.DeliveryTime,
+                    new IsServed(newInvoice.Served),
+                    items
+                    );
                 }
                 else
                 {
                     return Task.FromException(new Exception("Lỗi dữ liệu"));
                 }
-              
-                
 
-               return _invoiceRepository.Create(invoice);
+
+
+                return _invoiceRepository.Create(invoice);
 
             }
             catch (Exception ex)
@@ -72,7 +72,44 @@ namespace TransitionApp.Domain.Consumer.Invoice
                 Console.Write(ex.Message);
                 throw;
             }
-            
+
+        }
+
+        public Task Consume(ConsumeContext<UpdateInvoiceCommand> context)
+        {
+            try
+            {
+                UpdateInvoiceCommand updateInvoice = context.Message;
+                List<Item> items = new List<Item>();
+                updateInvoice.Items.ToList().ForEach(x =>
+                {
+                    Item item = new Item(
+                        new IsDeliveried(x.Deliveried),
+                        new Quantity(x.DeliveriedQuantity),
+                        new Price(x.Price),
+                        new Name(x.ProductName),
+                        new Quantity(x.Quantity),
+                        new Price(x.TotalPrice),
+                        new Unit(x.UnitName),
+                        new Weight(Convert.ToDouble(x.Weight))
+                        );
+                    items.Add(item);
+                });
+                Model.Entity.Invoice invoice = new Model.Entity.Invoice(
+                    new Code(updateInvoice.Code),
+                    new Price(updateInvoice.TotalPrice),
+                    new Weight(updateInvoice.WeightTotal),
+                    items);
+
+                return _invoiceRepository.Update(invoice);
+
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+                throw;
+            }
+
         }
     }
 }

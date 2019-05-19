@@ -14,10 +14,8 @@ namespace TransitionApp.Domain.Interface.Repository
         #region Read
         Task<VehicleReadModel> Get();
         VehicleReadModel GetById(int id);
-
         bool checkExist(int id);
-
-
+        bool checkExist(string code);
         SearchVehicleReadModel GetAll(int page, int pageSize, SearchVehicleModel vehicleModel);
         #endregion
 
@@ -26,6 +24,7 @@ namespace TransitionApp.Domain.Interface.Repository
         Task Delete(Identity identity);
         VehicleModel Edit(Vehicle vehicle);
         bool ImportExcel(List<Vehicle> vehicles);
+       
         #endregion
 
     }

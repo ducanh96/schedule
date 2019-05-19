@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using MassTransit.RabbitMqTransport;
+using OrderService.Domain.Commands.Invoices;
 using System;
 using System.Collections.Generic;
 using TransitionApp.Domain.Interface.Repository;
@@ -50,30 +51,36 @@ namespace TransitionApp.Service.Implement
 
         public bool UpdateVoice(int invoiceId, int status)
         {
-            var ipValue = "192.168.1.32";
-            var invoice = _invoiceRepository.UpdateVoice(invoiceId, status);
-            if (status != invoice.Status)
+            try
             {
-                IBusControl rabbitBusControl = Bus.Factory.CreateUsingRabbitMq(
-              rabbit =>
-              {
-                  IRabbitMqHost rabbitMqHost = rabbit.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
+                var ipValue = "192.168.1.32";
+                var invoice = _invoiceRepository.UpdateVoice(invoiceId, status);
+                IBus rabbitBusControl = Bus.Factory.CreateUsingRabbitMq(
+                  rabbit =>
                   {
-                  });
-              }
-            );
-                rabbitBusControl.Start();
+                      IRabbitMqHost rabbitMqHost = rabbit.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
+                      {
+                          settings.Username("tuandv");
+                          settings.Password("tuandv");
+                      });
+                  }
+                );
 
-                rabbitBusControl.Publish<InvoiceReadModel>(new InvoiceReadModel
-                {
-                    Status = invoice.Status,
-                    Code = invoice.Code
-                });
-                rabbitBusControl.StopAsync();
-
+                rabbitBusControl.Publish<InvoiceReadModel>(invoice);
+    
                 return true;
             }
-            return false;
+            catch (Exception)
+            {
+                return false;
+            }
+           
+
+        }
+
+        public InvoiceReadModel GetInvoice(string code)
+        {
+            return _invoiceRepository.GetInvoice(code);
         }
     }
 }

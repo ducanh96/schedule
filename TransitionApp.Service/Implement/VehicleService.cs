@@ -22,6 +22,11 @@ namespace TransitionApp.Service.Implement
             return _vehicleRepository.checkExist(id);
         }
 
+        public bool checkExist(string code)
+        {
+            return _vehicleRepository.checkExist(code);
+        }
+
         public async Task<VehicleReadModel> Get()
         {
             return await _vehicleRepository.Get();
