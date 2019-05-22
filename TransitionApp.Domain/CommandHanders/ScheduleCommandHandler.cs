@@ -12,7 +12,8 @@ namespace TransitionApp.Domain.CommandHanders
 {
     public class ScheduleCommandHandler :
         CommandHandler,
-        IRequestHandler<CreateScheduleCommand, object>
+        IRequestHandler<CreateScheduleCommand, object>,
+        IRequestHandler<DeleteScheduleCommand, object>
     {
         private readonly IScheduleRepository _scheduleRepository;
         private readonly IMediatorHandler _bus;
@@ -66,8 +67,14 @@ namespace TransitionApp.Domain.CommandHanders
                 new DeliveredAt(request.DeliveredAt),
                 lstRoute
                 );
-            _scheduleRepository.Create(schedule);
-            return Task.FromResult(true as object);
+            var result  = _scheduleRepository.Create(schedule);
+            return Task.FromResult(result as object);
+        }
+
+        public Task<object> Handle(DeleteScheduleCommand request, CancellationToken cancellationToken)
+        {
+            var result = _scheduleRepository.Delete(request.ID);
+            return Task.FromResult(result as object);
         }
     }
 }

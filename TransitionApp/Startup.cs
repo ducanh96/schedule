@@ -92,6 +92,7 @@ namespace TransitionApp
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
             services.AddTransient<IScheduleService, ScheduleService>();
             services.AddScoped<IRequestHandler<CreateScheduleCommand, object>, ScheduleCommandHandler>();
+            services.AddScoped<IRequestHandler<DeleteScheduleCommand, object>, ScheduleCommandHandler>();
 
             // DI Customer
             services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -116,7 +117,7 @@ namespace TransitionApp
             container.RegisterInstance(Configuration);
             //add masstran
 
-            var ipValue = "localhost";
+            var ipValue = "192.168.43.51";
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
                 {
                     var host = cfg.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>

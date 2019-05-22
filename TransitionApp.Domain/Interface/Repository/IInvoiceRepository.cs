@@ -23,5 +23,7 @@ namespace TransitionApp.Domain.Interface.Repository
         IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId);
         InvoiceReadModel UpdateVoice(int invoiceId, int status);
         InvoiceReadModel GetInvoice(string code);
+        IEnumerable<InvoiceReadModel> GetInvoices(List<int> ids);
+        Task UpdateInvoiceStatus(Invoice invoice);
     }
 }

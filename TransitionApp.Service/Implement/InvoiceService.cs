@@ -1,6 +1,5 @@
 ﻿using MassTransit;
 using MassTransit.RabbitMqTransport;
-using OrderService.Domain.Commands.Invoices;
 using System;
 using System.Collections.Generic;
 using TransitionApp.Domain.Interface.Repository;
@@ -53,34 +52,42 @@ namespace TransitionApp.Service.Implement
         {
             try
             {
-                var ipValue = "192.168.1.32";
+                var ipValue = "192.168.43.51";
                 var invoice = _invoiceRepository.UpdateVoice(invoiceId, status);
-                IBus rabbitBusControl = Bus.Factory.CreateUsingRabbitMq(
-                  rabbit =>
-                  {
-                      IRabbitMqHost rabbitMqHost = rabbit.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
-                      {
-                          settings.Username("tuandv");
-                          settings.Password("tuandv");
-                      });
-                  }
-                );
+                if (invoice != null)
+                {
+                    IBus rabbitBusControl = Bus.Factory.CreateUsingRabbitMq(
+                     rabbit =>
+                     {
+                         IRabbitMqHost rabbitMqHost = rabbit.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
+                         {
+                             settings.Username("tuandv");
+                             settings.Password("tuandv");
+                         });
+                     }
+                    );
+                    rabbitBusControl.Publish<InvoiceReadModel>(invoice);
+                    return true;
+                }
+                return false;
 
-                rabbitBusControl.Publish<InvoiceReadModel>(invoice);
-    
-                return true;
             }
             catch (Exception)
             {
                 return false;
             }
-           
+
 
         }
 
         public InvoiceReadModel GetInvoice(string code)
         {
             return _invoiceRepository.GetInvoice(code);
+        }
+
+        public IEnumerable<InvoiceReadModel> GetInvoices(List<int> ids)
+        {
+            return _invoiceRepository.GetInvoices(ids);
         }
     }
 }

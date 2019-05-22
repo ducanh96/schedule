@@ -50,5 +50,10 @@ namespace TransitionApp.Service.Implement
             return _driverRepository.GetCustomers(date, driverId);
 
         }
+
+        public bool IsServedCustomer(int customerId, DateTime date, int driverId)
+        {
+            return _driverRepository.IsServedCustomer(customerId, date, driverId);
+        }
     }
 }

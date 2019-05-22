@@ -7,6 +7,12 @@ namespace TransitionApp.Domain.Model.Entity
 {
     public class Invoice
     {
+        public Invoice(Code code, Status status)
+        {
+            Code = code;
+            Status = status;
+        }
+
         public Invoice(Code code, Price totalPrice, Weight weightTotal, List<Item> items)
         {
             Code = code;

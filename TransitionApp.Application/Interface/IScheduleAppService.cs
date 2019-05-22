@@ -14,5 +14,6 @@ namespace TransitionApp.Application.Interface
         Task<SearchScheduleResponse> GetAll(SearchScheduleRequest request);
         Task<SearchScheduleResponse> Get(int id);
         Task<BaseResponse> Create(CreateScheduleRequest request);
+        Task<DeleteScheduleResponse> Delete(int id);
     }
 }

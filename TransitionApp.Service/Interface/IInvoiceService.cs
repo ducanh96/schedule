@@ -14,6 +14,7 @@ namespace TransitionApp.Service.Interface
         AddressReadModel GetAddress(int addressId);
         IEnumerable<ItemReadModel> GetItems(int invoiceId);
         IEnumerable<InvoiceReadModel> GetInvoices(DateTime deliverTime, int driverId, int customerId);
+        IEnumerable<InvoiceReadModel> GetInvoices(List<int> ids);
 
         #region For Bot
         bool UpdateVoice(int invoiceId, int status);

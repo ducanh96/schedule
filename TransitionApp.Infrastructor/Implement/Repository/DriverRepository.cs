@@ -27,6 +27,27 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             {
                 using (IDbConnection conn = Connection)
                 {
+                    
+
+                    string queryAccount =
+                               @"Insert Into Account(
+                                          Role
+                                        , Password
+                                        , UserName)
+
+                                Values(@Role
+                                    , @Password
+                                    , @UserName); 
+                  SELECT Id from Account where Id = CAST(SCOPE_IDENTITY() as int)";
+
+                    var idAccount = conn.QueryFirstOrDefault<int>(queryAccount, new
+                    {
+                        Role = 1,
+                        Password = "123456",
+                        UserName = driver.Code.Value,
+                    });
+
+
                     string sQuery =
                         @"Insert Into Driver(Name
                                             , Code
@@ -68,7 +89,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                         Code = driver.Code.Value,
                         PhoneNumber = driver.PhoneNumber.Value,
                         Status = driver.Status.Value,
-                        UserID = driver.UserID.Value,
+                        UserID = idAccount,
                         StartDate = driver.StartDate.Value,
                         DoB = driver.DoB.Value,
                         IDCardNumber = driver.IDCardNumber.Value,
@@ -82,22 +103,10 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                         StreetNumber = driver.Address.StreetNumber
                     });
 
-                    string queryAccount =
-                               @"Insert Into Account(
-                                          Role
-                                        , Password
-                                        , UserName)
 
-                                Values(@Role
-                                    , @Password
-                                    , @UserName); ";
 
-                    conn.Execute(queryAccount, new
-                    {
-                        Role = 1,
-                        Password = "123456",
-                        UserName = driver.Code.Value,
-                    });
+
+
                     trans.Complete();
 
                     return result;
@@ -202,7 +211,6 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                                         , Code =  @Code
                                         , PhoneNumber =  @PhoneNumber
                                         , Status = @Status
-                                        , UserID = @UserID
                                         , StartDate = @StartDate
                                         , DoB =  @DoB
                                         , IDCardNumber = @IDCardNumber
@@ -224,7 +232,6 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Code = driver.Code.Value,
                     PhoneNumber = driver.PhoneNumber.Value,
                     Status = driver.Status.Value,
-                    UserID = driver.UserID.Value,
                     StartDate = driver.StartDate.Value,
                     DoB = driver.DoB.Value,
                     IDCardNumber = driver.IDCardNumber.Value,
@@ -360,6 +367,30 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                     Code = code
                 }
                 );
+                return result;
+            }
+        }
+
+        public bool IsServedCustomer(int customerId, DateTime date, int driverId)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @" Select IsServed
+                                From RouteInfo
+                                WHERE CustomerId = @CustomerId
+                                    AND  RouterId = (
+                                SELECT TOP 1.Id FROM dbo.Route
+                                WHERE DriverID = @DriverId AND ScheduleId = (SELECT Id FROM dbo.Schedule 
+                                    WHERE CAST(DeliveredAt AS DATE) = CAST(@Date AS DATE)
+                                    )
+                                );";
+
+                var result = conn.QueryFirstOrDefault<bool>(sQuery, new
+                {
+                    DriverId = driverId,
+                    Date = date,
+                    CustomerId = customerId
+                });
                 return result;
             }
         }

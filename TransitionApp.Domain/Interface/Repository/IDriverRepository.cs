@@ -25,6 +25,7 @@ namespace TransitionApp.Domain.Interface.Repository
         bool Delete(int id);
         DriverReadModel GetByAccount(int userId);
         IEnumerable<CustomerReadModel> GetCustomers(DateTime date, int driverId);
+        bool IsServedCustomer(int customerId, DateTime date, int driverId);
         #endregion
     }
 }

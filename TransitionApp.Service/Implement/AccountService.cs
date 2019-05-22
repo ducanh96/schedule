@@ -25,5 +25,10 @@ namespace TransitionApp.Service.Implement
         {
             return _accountRepository.IsExixtAccount(userName);
         }
+
+        public bool UpdateAccount(string userName, string password)
+        {
+            return _accountRepository.UpdateAccount(userName, password);
+        }
     }
 }

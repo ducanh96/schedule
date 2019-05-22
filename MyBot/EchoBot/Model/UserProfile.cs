@@ -24,6 +24,8 @@ namespace EchoBot.Model
         public bool IsStartConverstation { get; set; } = false;
         public bool IsStartTransition { get; set; } = false;
         public bool IsStartInvoice { get; set; } = false;
+
+        public bool IsChangePassword { get; set; } = false;
         public bool IsLogin { get; set; } = false;
 
         public UserProfile()

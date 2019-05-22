@@ -70,6 +70,24 @@ namespace TransitionApp.Infrastructor.Implement.Repository
             }
         }
 
+        public bool UpdateAccount(string userName, string password)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @"Update Account  
+                                        SET Password = @Password
+                           WHERE UserName = @UserName;";
+
+                var result = conn.Execute(sQuery, new
+                {
+                    UserName = userName,
+                    Password = password,
+
+                });
+                return result > 0;
+            }
+        }
+
         public IDbConnection Connection
         {
             get

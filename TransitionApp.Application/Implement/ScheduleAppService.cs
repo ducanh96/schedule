@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MassTransit;
+using MassTransit.RabbitMqTransport;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using TransitionApp.Application.ResponseModel;
 using TransitionApp.Application.ResponseModel.Schedule;
 using TransitionApp.Domain.Bus;
 using TransitionApp.Domain.Commands.Schedule;
+using TransitionApp.Domain.ReadModel.Invoice;
 using TransitionApp.Domain.ReadModel.Schedule;
 using TransitionApp.Domain.ReadModel.Schedule.DAO;
 using TransitionApp.Service.Interface;
@@ -19,10 +22,12 @@ namespace TransitionApp.Application.Implement
         private readonly IScheduleService _scheduleService;
         private readonly IDriverService _driverService;
         private readonly IMediatorHandler _bus;
-        public ScheduleAppService(IScheduleService scheduleService, IDriverService driverService, IMediatorHandler bus)
+        private readonly IInvoiceService _invoiceService;
+        public ScheduleAppService(IScheduleService scheduleService, IDriverService driverService, IInvoiceService invoiceService, IMediatorHandler bus)
         {
             _scheduleService = scheduleService;
             _driverService = driverService;
+            _invoiceService = invoiceService;
             _bus = bus;
         }
 
@@ -32,6 +37,8 @@ namespace TransitionApp.Application.Implement
             try
             {
                 #region Tao dữ liệu routes
+
+                var idsInvoice = new List<int>();
                 
                 List<ScheduleCommand.Route> lstRoute = new List<ScheduleCommand.Route>();
                 foreach (var route in request.Routes)
@@ -40,6 +47,8 @@ namespace TransitionApp.Application.Implement
                     List<ScheduleCommand.CustomerInfo> customerInfos = new List<ScheduleCommand.CustomerInfo>();
                     route.Customers.ForEach(x =>
                     {
+
+                        idsInvoice.AddRange(x.Invoices);
                         ScheduleCommand.CustomerInfo customerInfo = new ScheduleCommand.CustomerInfo()
                         {
                             CustomerID = x.CustomerID,
@@ -89,6 +98,30 @@ namespace TransitionApp.Application.Implement
                 };
                 var result = _bus.SendCommand(createCommand);
 
+                Task<object> status = result as Task<object>;
+                bool isCreate = (bool)status.Result;
+                if (isCreate)
+                {
+                    var ipValue = "192.168.43.51";
+                    IBus rabbitBusControl = Bus.Factory.CreateUsingRabbitMq(
+                        rabbit =>
+                        {
+                            IRabbitMqHost rabbitMqHost = rabbit.Host(new Uri($"rabbitmq://{ipValue}/"), settings =>
+                            {
+                                settings.Username("tuandv");
+                                settings.Password("tuandv");
+                            });
+                        }
+                    );
+
+                    var invoices = _invoiceService.GetInvoices(idsInvoice);
+                    foreach (var item in invoices)
+                    {
+                        rabbitBusControl.Publish<InvoiceReadModel>(item);
+                    }
+                    
+                }
+
                 return Task.FromResult(new BaseResponse
                 {
                    
@@ -105,13 +138,38 @@ namespace TransitionApp.Application.Implement
            
             
         }
-        /// <summary>
-        /// lấy lịch cụ thể
-        /// </summary>
-        /// <param name="id">mã lịch</param>
-        /// <returns></returns>
 
-        public Task<SearchScheduleResponse> Get(int id)
+        public Task<DeleteScheduleResponse> Delete(int id)
+        {
+            DeleteScheduleResponse deleteScheduleResponse = new DeleteScheduleResponse();
+            DeleteScheduleCommand deleteScheduleCommand = new DeleteScheduleCommand
+            {
+                ID = id
+            };
+            var result = _bus.SendCommand(deleteScheduleCommand);
+            Task<object> status = result as Task<object>;
+            bool isCreate = (bool)status.Result;
+            if (isCreate)
+            {
+                deleteScheduleResponse.Success = true;
+                deleteScheduleResponse.Data = "";
+            }
+            else
+            {
+                deleteScheduleResponse.Success = true;
+                deleteScheduleResponse.Data = "";
+            }
+            return Task.FromResult(deleteScheduleResponse);
+        }
+
+
+            /// <summary>
+            /// lấy lịch cụ thể
+            /// </summary>
+            /// <param name="id">mã lịch</param>
+            /// <returns></returns>
+
+            public Task<SearchScheduleResponse> Get(int id)
         {
             var response = new SearchScheduleResponse();
             try

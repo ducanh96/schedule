@@ -9,6 +9,7 @@ namespace TransitionApp.Service.Interface
     {
         AccountReadModel Get(string userName, string password);
         bool IsExistAccount(string userName);
+        bool UpdateAccount(string userName, string password);
        
     }
 }

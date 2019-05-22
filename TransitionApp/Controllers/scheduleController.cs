@@ -23,7 +23,7 @@ namespace TransitionApp.Controllers
         public async Task<IActionResult> Post([FromBody]CreateScheduleRequest request)
         {
             var result = await _scheduleAppService.Create(request);
-            return Ok(true);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -38,6 +38,14 @@ namespace TransitionApp.Controllers
         public async Task<IActionResult> Get(int id)
         {
             var result = await _scheduleAppService.Get(id);
+            return Ok(result);
+        }
+
+        // DELETE api/values/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _scheduleAppService.Delete(id);
             return Ok(result);
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Invoice;
@@ -92,6 +93,9 @@ namespace TransitionApp.Service.Implement
             return customerRoutes;
         }
 
-       
+        public bool UpdateIsServedRouteInfo(int customerId, DateTime deliveredAt, int driverId, bool isServed)
+        {
+            return _scheduleRepository.UpdateIsServedRouteInfo(customerId, deliveredAt, driverId, isServed);
+        }
     }
 }

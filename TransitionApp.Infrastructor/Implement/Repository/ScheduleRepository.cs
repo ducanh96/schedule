@@ -174,7 +174,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
 
         public bool Create(Schedule schedule)
         {
-           
+
             using (var trans = new TransactionScope())
             {
                 using (IDbConnection conn = Connection)
@@ -304,7 +304,7 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                             Set Status = @Status
                             Where Id = @Id; ";
 
-                       
+
                         route.Customers.ForEach(x =>
                         {
                             conn.Execute(updateInvoice, new
@@ -314,8 +314,8 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                             });
                         });
 
-                       
-                        
+
+
 
                         #endregion
 
@@ -328,7 +328,69 @@ namespace TransitionApp.Infrastructor.Implement.Repository
 
 
             }
-           
+
+        }
+
+        public bool UpdateIsServedRouteInfo(int customerId, DateTime deliveredAt, int driverId, bool isServed)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string queryRouteInfo = @"Update RouteInfo 
+                                        Set IsServed = @IsServed
+                                        WHERE CustomerId = @CustomerId
+                                    AND  RouterId = (
+                                SELECT TOP 1.Id FROM dbo.Route
+                                WHERE DriverID = @DriverId AND ScheduleId = (SELECT Id FROM dbo.Schedule 
+                                    WHERE CAST(DeliveredAt AS DATE) = CAST(@Date AS DATE)
+                                                                            )
+                                                    );";
+                var result = conn.Execute(queryRouteInfo, new
+                {
+                    IsServed = isServed,
+                    CustomerId = customerId,
+                    Date = deliveredAt,
+                    DriverId = driverId
+
+                });
+                return result > 0;
+            }
+        }
+
+        public bool Delete(int id)
+        {
+            using (var trans = new TransactionScope())
+            {
+                using (IDbConnection conn = Connection)
+                {
+                    conn.Open();
+                    string sQuery = @" DELETE FROM RouteInfo
+                                    WHERE RouterId IN (SELECT Id FROM dbo.Route WHERE ScheduleId = @Id);
+                                    ";
+
+                    conn.Execute(sQuery, new
+                    {
+                        Id = id
+                    });
+
+                    string deleteRoute = @" DELETE FROM Route
+                                    WHERE ScheduleId = @Id";
+
+                    conn.Execute(deleteRoute, new
+                    {
+                        Id = id
+                    });
+
+                    string deleteSchedult = @" DELETE FROM Schedule
+                                    WHERE Id = @Id";
+                    conn.Execute(deleteSchedult, new
+                    {
+                        Id = id
+                    });
+                    trans.Complete();
+                    return  true;
+                }
+            }
+
         }
 
         public IDbConnection Connection

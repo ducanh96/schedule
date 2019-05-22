@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using TransitionApp.Domain.Interface.Repository;
@@ -329,6 +330,60 @@ namespace TransitionApp.Infrastructor.Implement.Repository
                 return Task.CompletedTask;
             }
         }
+
+        public InvoiceReadModel GetInvoice(string code)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @" Select Id, [Note], [Served], [ServerTime], [Status], [DeliveryTime]
+                                , [TotalPrice], [WeightTotal], [CustomerId], [Code]
+                                FROM Invoice  WHERE Code = @Code;";
+
+                var result = conn.QueryFirstOrDefault<InvoiceReadModel>(sQuery, new
+                {
+                    Code = code
+                });
+                return result;
+            }
+        }
+
+        public IEnumerable<InvoiceReadModel> GetInvoices(List<int> ids)
+        {
+            using (IDbConnection conn = Connection)
+            {
+                string sQuery = @" Select Id, [Note], [Served], [ServerTime], [Status], [DeliveryTime]
+                                , [TotalPrice], [WeightTotal], [CustomerId], [Code]
+                                FROM Invoice  WHERE Id
+                                    IN @Ids;";
+
+                var result = conn.Query<InvoiceReadModel>(sQuery, new
+                {
+                    Ids = ids
+                });
+                return result;
+            }
+        }
+
+        public Task UpdateInvoiceStatus(Invoice invoice)
+        {
+           
+                using (IDbConnection conn = Connection)
+                {
+                    string sQuery =
+                     @"Update Invoice
+                        SET Status = @Status
+                        WHERE Lower(Code) = Lower(@Code)";
+
+                    var result = conn.Execute(sQuery, new
+                    {
+                        Code = invoice.Code.Value,
+                        Status = invoice.Status.Value
+                    });
+                }
+          
+            return Task.CompletedTask;
+        } 
+
 
         public IDbConnection Connection
         {

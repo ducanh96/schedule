@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using TransitionApp.Domain.Model.Entity;
 using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Invoice;
@@ -18,6 +19,7 @@ namespace TransitionApp.Domain.Interface.Repository
         IEnumerable<RouteInfoReadModel> GetRouteInfo(int routeId);
         CustomerDetailReadModel GetInforCustomerOfRoute(int customerId);
         AddressReadModel GetInformationCustomerOfRoute(int routerInfo);
-        
+        bool UpdateIsServedRouteInfo(int customerId, DateTime deliveredAt, int driverId, bool isServed);
+        bool Delete(int id);
     }
 }

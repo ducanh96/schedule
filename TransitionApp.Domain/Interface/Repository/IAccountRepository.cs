@@ -9,5 +9,6 @@ namespace TransitionApp.Domain.Interface.Repository
         bool ResetPassword(Account account);
         AccountReadModel Get(string userName, string password);
         bool IsExixtAccount(string userName);
+        bool UpdateAccount(string userName, string password);
     }
 }

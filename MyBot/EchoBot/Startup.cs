@@ -23,6 +23,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TransitionApp.Domain.Bus;
 using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Infrastructor.Implement.Repository;
 using TransitionApp.Service.Implement;
@@ -143,6 +144,9 @@ namespace EchoBot
                     UserProfileAccessor = userState.CreateProperty<UserProfile>(EchoBotAccessors.UserProfileName),
                 };
             });
+
+           
+           
 
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddTransient<IDriverService, DriverService>();

@@ -8,10 +8,11 @@ using TransitionApp.Domain.Interface.Repository;
 using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.Model.ValueObject;
 using TransitionApp.Domain.Model.Entity;
+using TransitionApp.Domain.ReadModel.Invoice;
 
 namespace TransitionApp.Domain.Consumer.Invoice
 {
-    public class InvoiceConsumer : IConsumer<AddNewInvoiceCommand>, IConsumer<UpdateInvoiceCommand>
+    public class InvoiceConsumer : IConsumer<AddNewInvoiceCommand>, IConsumer<UpdateInvoiceCommand>, IConsumer<CancelInvoiceModel>
     {
         public IInvoiceRepository _invoiceRepository;
 
@@ -109,6 +110,27 @@ namespace TransitionApp.Domain.Consumer.Invoice
                 Console.Write(ex.Message);
                 throw;
             }
+
+        }
+
+        public Task Consume(ConsumeContext<CancelInvoiceModel> context)
+        {
+            try
+            {
+                CancelInvoiceModel cancelInvoice = context.Message;
+                Model.Entity.Invoice invoice = new Model.Entity.Invoice(
+                 new Code(cancelInvoice.Code),
+                 new Status(cancelInvoice.Status)
+                 );
+                return _invoiceRepository.UpdateInvoiceStatus(invoice);
+
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.Message);
+                return Task.CompletedTask;
+            }
+            
 
         }
     }

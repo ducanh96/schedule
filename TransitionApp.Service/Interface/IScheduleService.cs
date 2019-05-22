@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TransitionApp.Domain.ReadModel.Customer;
 using TransitionApp.Domain.ReadModel.Invoice;
@@ -16,5 +17,7 @@ namespace TransitionApp.Service.Interface
         CustomerDetailReadModel GetInforCustomerOfRoute(int customerId);
         AddressReadModel GetInformationCustomerOfRoute(int routerInfo);
         IEnumerable<CustomerRouteReadModel> GetListCustomer(List<RouteInfoReadModel> routeInfoReadModels);
+        bool UpdateIsServedRouteInfo(int customerId, DateTime deliveredAt, int driverId, bool isServed);
+       
     }
 }
